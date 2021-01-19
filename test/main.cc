@@ -4,17 +4,23 @@
 
 #include <iostream>
 
-#include "memory/allocator.h"
-#include "container/vector.h"
+#include "eureka/traits.h"
 
-int main() {
-  eureka::vector<int> vec;
-  for (int i = 0; i < 100; ++i) {
-    vec.push_back(i);
-  }
-  for (int i = 0; i < 100; ++i) {
-    std::cout << vec.back() << std::endl;
-    vec.pop_back();
-  }
+using namespace eureka;
+
+int k() {
   return 0;
+}
+
+class clazz {
+
+};
+int main() {
+  auto p = []() { return 1; };
+
+  std::cout << is_object_t<int>::value << std::endl;
+  std::cout << is_object_t<double>::value << std::endl;
+  std::cout << is_object_t<decltype(main)>::value << std::endl;
+  std::cout << is_object_t<decltype(p)>::value << std::endl;
+  std::cout << is_object_t<clazz>::value << std::endl;
 }
