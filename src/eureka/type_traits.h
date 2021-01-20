@@ -14,7 +14,7 @@ template<typename Arithmetic, Arithmetic Value>
 struct arithmetic_constant {
   using type = arithmetic_constant<Arithmetic, Value>;
   using value_t = Arithmetic;
-  static const Arithmetic value = Value;
+  static constexpr Arithmetic value = Value;
 };
 
 template<bool Value>
@@ -64,7 +64,7 @@ struct is_same<Arg> : true_t {};
 template<typename Arg, typename... Args>
 struct is_same<Arg, Arg, Args...> : is_same<Arg, Args...> {};
 template<typename... Args>
-typename is_same<Args...>::value_t is_same_v = is_same<Args...>::value;
+constexpr typename is_same<Args...>::value_t is_same_v = is_same<Args...>::value;
 
 /**
  * qualifiers traits
@@ -74,14 +74,14 @@ struct is_const : false_t {};
 template<typename Arg>
 struct is_const<const Arg> : true_t {};
 template<typename Arg>
-typename is_const<Arg>::value_t is_const_v = is_const<Arg>::value;
+constexpr typename is_const<Arg>::value_t is_const_v = is_const<Arg>::value;
 
 template<typename Arg>
 struct is_volatile : false_t {};
 template<typename Arg>
 struct is_volatile<volatile Arg> : true_t {};
 template<typename Arg>
-typename is_volatile<Arg>::value_t is_volatile_v = is_volatile<Arg>::value;
+constexpr typename is_volatile<Arg>::value_t is_volatile_v = is_volatile<Arg>::value;
 
 template<typename Arg>
 struct remove_const { using type = Arg; };
@@ -129,7 +129,7 @@ using add_const_volatile_t = typename add_const_volatile<Arg>::type;
 template<typename Arg>
 struct is_void : is_same<void, remove_const_volatile_t<Arg>> {};
 template<typename Arg>
-typename is_void<Arg>::value_t is_void_v = is_void<Arg>::value;
+constexpr typename is_void<Arg>::value_t is_void_v = is_void<Arg>::value;
 
 namespace _impl {
 template<typename Arg>
@@ -140,7 +140,7 @@ struct is_pointer_impl<Arg *> : true_t {};
 template<typename Arg>
 using is_pointer = _impl::is_pointer_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
-typename is_pointer<Arg>::value_t is_pointer_v = is_pointer<Arg>::value;
+constexpr typename is_pointer<Arg>::value_t is_pointer_v = is_pointer<Arg>::value;
 
 template<typename Arg>
 struct is_array : false_t {};
@@ -149,32 +149,37 @@ struct is_array<Arg[]> : true_t {};
 template<typename Arg, size_t Rank>
 struct is_array<Arg[Rank]> : true_t {};
 template<typename Arg>
-typename is_array<Arg>::value_t is_array_v = is_array<Arg>::value;
+constexpr typename is_array<Arg>::value_t is_array_v = is_array<Arg>::value;
 
 template<typename Arg>
 struct is_lvalue_reference : false_t {};
 template<typename Arg>
 struct is_lvalue_reference<Arg &> : true_t {};
 template<typename Arg>
-typename is_lvalue_reference<Arg>::value_t is_lvalue_reference_v = is_lvalue_reference<Arg>::value;
+constexpr typename is_lvalue_reference<Arg>::value_t is_lvalue_reference_v = is_lvalue_reference<Arg>::value;
 
 template<typename Arg>
 struct is_rvalue_reference : false_t {};
 template<typename Arg>
 struct is_rvalue_reference<Arg &&> : true_t {};
 template<typename Arg>
-typename is_rvalue_reference<Arg>::value_t is_rvalue_reference_v = is_rvalue_reference<Arg>::value;
+constexpr typename is_rvalue_reference<Arg>::value_t is_rvalue_reference_v = is_rvalue_reference<Arg>::value;
+
+template<typename Arg>
+using is_reference = disjunction<is_rvalue_reference<Arg>, is_lvalue_reference<Arg>>;
+template<typename Arg>
+constexpr typename is_reference<Arg>::value_t is_reference_v = is_reference<Arg>::value;
 
 // __built_in implementation
 template<typename Arg>
 using is_union = boolean_constant<__is_union(Arg)>;
 template<typename Arg>
-typename is_union<Arg>::value_t is_union_v = is_union<Arg>::value;
+constexpr typename is_union<Arg>::value_t is_union_v = is_union<Arg>::value;
 
 template<typename Arg>
 using is_enum = boolean_constant<__is_enum(Arg)>;
 template<typename Arg>
-typename is_enum<Arg>::value_t is_enum_v = is_enum<Arg>::value;
+constexpr typename is_enum<Arg>::value_t is_enum_v = is_enum<Arg>::value;
 //
 
 namespace _impl {
@@ -185,12 +190,39 @@ false_t is_class_or_union_impl(...);
 template<typename Arg>
 struct is_class_or_union : decltype(_impl::is_class_or_union_impl<Arg>(nullptr)) {};
 template<typename Arg>
-typename is_class_or_union<Arg>::value_t is_class_or_union_v = is_class_or_union<Arg>::value;
+constexpr typename is_class_or_union<Arg>::value_t is_class_or_union_v = is_class_or_union<Arg>::value;
 } // namespace _impl
 template<typename Arg>
 using is_class = conjunction<_impl::is_class_or_union<Arg>, negation<is_union<Arg>>>;
 template<typename Arg>
-typename is_class<Arg>::value_t is_class_v = is_class<Arg>::value;
+constexpr typename is_class<Arg>::value_t is_class_v = is_class<Arg>::value;
+
+template<typename Arg>
+using is_function = conjunction<negation<is_const<const Arg>>, negation<is_reference<Arg>>>;
+template<typename Arg>
+constexpr typename is_function<Arg>::value_t is_function_v = is_function<Arg>::value;
+
+namespace _impl {
+template<typename Arg>
+struct is_member_pointer_impl : false_t {};
+template<typename Arg, typename Class>
+struct is_member_pointer_impl<Arg Class::*> : true_t {};
+} // namespace _impl
+template<typename Arg>
+using is_member_pointer = _impl::is_member_pointer_impl<remove_const_volatile_t<Arg>>;
+template<typename Arg>
+constexpr typename is_member_pointer<Arg>::value_t is_member_pointer_v = is_member_pointer<Arg>::value;
+
+//template<typename Arg>
+//using is_member_function_pointer = conjunction<is_member_pointer<Arg>, is_function<Arg>>;
+//template<typename Arg>
+//constexpr typename is_member_function_pointer<Arg>::value_t
+//	is_member_function_pointer_v = is_member_function_pointer<Arg>::value;
+//template<typename Arg>
+//using is_member_object_pointer = conjunction<is_member_pointer<Arg>, negation<is_function<Arg>>>;
+//template<typename Arg>
+//constexpr typename is_member_object_pointer<Arg>::value_t
+//	is_member_object_pointer_v = is_member_object_pointer<Arg>::value;
 
 namespace _impl {
 template<typename Arg>
@@ -219,7 +251,7 @@ _is_integral_impl_macro(unsigned long long);
 template<typename Arg>
 using is_integral = _impl::is_integral_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
-typename is_integral<Arg>::value_t is_integral_v = is_integral<Arg>::value;
+constexpr typename is_integral<Arg>::value_t is_integral_v = is_integral<Arg>::value;
 
 namespace _impl {
 template<typename Arg>
@@ -236,7 +268,7 @@ _is_floating_point_impl_macro(long double);
 template<typename Arg>
 using is_floating_point = _impl::is_floating_point_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
-typename is_floating_point<Arg>::value_t is_floating_point_v = is_floating_point<Arg>::value;
+constexpr typename is_floating_point<Arg>::value_t is_floating_point_v = is_floating_point<Arg>::value;
 } // namespace
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TYPE_TRAITS_H_

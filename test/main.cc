@@ -6,21 +6,12 @@
 #include "eureka/type_traits.h"
 
 using namespace eureka;
-union T {
-  int x;
-};
 
-class X {
-  int x;
-};
-
-enum x {
-
-};
 int main() {
-  std::cout << is_integral_v<x> << std::endl;
-  std::cout << is_integral_v<int> << std::endl;
-  std::cout << is_integral_v<int &> << std::endl;
-  std::cout << is_integral_v<const bool> << std::endl;
-  std::cout << is_integral_v<const volatile wchar_t> << std::endl;
+//  std::cout << is_member_function_pointer_v<int> << std::endl;
+//  std::cout << is_member_function_pointer_v<double> << std::endl;
+//  std::cout << is_member_function_pointer_v<int *> << std::endl;
+//  std::cout << is_member_function_pointer_v<decltype(&main)> << std::endl;
+//  std::cout << is_member_function_pointer_v<decltype(&X::x)> << std::endl;
+//  std::cout << is_member_function_pointer_v<decltype(&X::p)> << std::endl;
 }
