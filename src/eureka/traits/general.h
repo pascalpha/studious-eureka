@@ -83,6 +83,30 @@ struct is_volatile<volatile Arg> : true_t {};
 template<typename Arg>
 constexpr typename is_volatile<Arg>::value_t is_volatile_v = is_volatile<Arg>::value;
 
+template<typename Arg>
+struct rank : arithmetic_constant<size_t, 0> {};
+template<typename Arg>
+struct rank<Arg[]> : arithmetic_constant<size_t, rank<Arg>::value + 1> {};
+template<typename Arg, size_t Num>
+struct rank<Arg[Num]> : arithmetic_constant<size_t, rank<Arg>::value + 1> {};
+template<typename Arg>
+constexpr typename rank<Arg>::value_t rank_v = rank<Arg>::value;
+
+template<typename Arg, size_t Dimension = 0>
+struct extent : arithmetic_constant<size_t, 0> {};
+template<typename Arg, size_t Dimension>
+struct extent<Arg[], Dimension> : extent<Arg, Dimension - 1> {};
+template<typename Arg>
+struct extent<Arg[], 0> : arithmetic_constant<size_t, 0> {};
+template<typename Arg, size_t Index, size_t Dimension>
+struct extent<Arg[Index], Dimension> : extent<Arg, Dimension - 1> {};
+template<typename Arg, size_t Index>
+struct extent<Arg[Index], 0> : arithmetic_constant<size_t, Index> {};
+template<typename Arg, size_t Dimension>
+constexpr typename extent<Arg, Dimension>::value_t extent_v = extent<Arg, Dimension>::value;
+
+template<typename Arg>
+struct type_identity { using type = Arg; };
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_GENERAL_H_

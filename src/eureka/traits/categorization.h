@@ -220,6 +220,25 @@ template<typename Arg>
 struct is_object : disjunction<is_scalar<Arg>, is_array<Arg>, is_union<Arg>, is_class<Arg>> {};
 template<typename Arg>
 constexpr typename is_object<Arg>::value_t is_object_v = is_object<Arg>::value;
+
+template<typename Arg>
+struct decay {
+ protected:
+  using unreferenced = remove_reference_t<Arg>;
+ public:
+  using type = conditional_t< /*if*/
+      is_array_v<unreferenced>, /*is array*/
+      remove_extent_t<unreferenced> *, /*then decay first dimension*/
+      conditional_t< /*else if*/
+          is_function_v<unreferenced>, /*is function*/
+          add_pointer_t<unreferenced>, /*decay to pointer*/
+          remove_const_volatile_t<unreferenced> /*remove cv qualifiers*/
+      >
+  >;
+};
+template<typename Arg>
+using decay_t = typename decay<Arg>::type;
+
 } // namespace
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_

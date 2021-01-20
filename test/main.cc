@@ -12,11 +12,11 @@ class X {
 
   static void p() {}
 };
-int main() {
+int main(int argc, char* argv[]) {
+  decay_t<decltype(main)> s;
+  decltype(s) p;
   std::cout << std::boolalpha
-            << is_unsigned_v<int> << std::endl
-            << is_unsigned_v<unsigned long long> << std::endl
-            << is_unsigned_v<X> << std::endl
-            << is_unsigned_v<unsigned char> << std::endl
-            << is_unsigned_v<signed short> << std::endl;
+            << is_same_v<decay_t<const int[2]>, const int *> << std::endl
+            << is_same_v<decay_t<int[2][2]>, int (*)[2]> << std::endl
+            << std::endl;
 }
