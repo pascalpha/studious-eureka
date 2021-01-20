@@ -2,132 +2,19 @@
 // Created by admin on 2021/1/20.
 //
 
-#ifndef STUDIOUS_EUREKA_SRC_EUREKA_TYPE_TRAITS_H_
-#define STUDIOUS_EUREKA_SRC_EUREKA_TYPE_TRAITS_H_
+#ifndef STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_
+#define STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_
+
+#include "general.h"
+#include "transformation.h"
 
 namespace eureka {
-
-using nullptr_t = decltype(nullptr);
-using size_t = decltype(sizeof(nullptr_t));
-
-template<typename Arithmetic, Arithmetic Value>
-struct arithmetic_constant {
-  using type = arithmetic_constant<Arithmetic, Value>;
-  using value_t = Arithmetic;
-  static constexpr Arithmetic value = Value;
-};
-
-template<bool Value>
-using boolean_constant = arithmetic_constant<bool, Value>;
-using true_t = boolean_constant<true>;
-using false_t = boolean_constant<false>;
-
-
-/**
- * logic
- */
-
-template<bool If, typename Then, typename Else>
-struct conditional { using type = Else; };
-template<typename Then, typename Else>
-struct conditional<true, Then, Else> { using type = Then; };
-template<bool If, typename Then, typename Else>
-using conditional_t = typename conditional<If, Then, Else>::type;
-
-template<typename... Disjuncts>
-struct disjunction;
-template<>
-struct disjunction<> : false_t {};
-template<typename Disjunct, typename... Disjuncts>
-struct disjunction<Disjunct, Disjuncts...> : conditional_t<Disjunct::value, true_t, disjunction<Disjuncts...>> {};
-template<typename... Disjuncts>
-typename disjunction<Disjuncts...>::value_t disjunction_v = disjunction<Disjuncts...>::value;
-
-template<typename... Conjuncts>
-struct conjunction;
-template<>
-struct conjunction<> : true_t {};
-template<typename Conjunct, typename... Conjuncts>
-struct conjunction<Conjunct, Conjuncts...> : conditional_t<Conjunct::value, conjunction<Conjuncts...>, false_t> {};
-template<typename... Conjuncts>
-typename conjunction<Conjuncts...>::value_t conjunction_v = conjunction<Conjuncts...>::value;
-
-template<typename Clause>
-using negation = boolean_constant<!Clause::value>;
-template<typename Clause>
-typename negation<Clause>::value_t negation_v = negation<Clause>::value;
-
-template<typename... Args>
-struct is_same : false_t {};
-template<typename Arg>
-struct is_same<Arg> : true_t {};
-template<typename Arg, typename... Args>
-struct is_same<Arg, Arg, Args...> : is_same<Arg, Args...> {};
-template<typename... Args>
-constexpr typename is_same<Args...>::value_t is_same_v = is_same<Args...>::value;
-
-/**
- * qualifiers traits
- */
-template<typename Arg>
-struct is_const : false_t {};
-template<typename Arg>
-struct is_const<const Arg> : true_t {};
-template<typename Arg>
-constexpr typename is_const<Arg>::value_t is_const_v = is_const<Arg>::value;
-
-template<typename Arg>
-struct is_volatile : false_t {};
-template<typename Arg>
-struct is_volatile<volatile Arg> : true_t {};
-template<typename Arg>
-constexpr typename is_volatile<Arg>::value_t is_volatile_v = is_volatile<Arg>::value;
-
-template<typename Arg>
-struct remove_const { using type = Arg; };
-template<typename Arg>
-struct remove_const<const Arg> { using type = Arg; };
-template<typename Arg>
-using remove_const_t = typename remove_const<Arg>::type;
-
-template<typename Arg>
-struct remove_volatile { using type = Arg; };
-template<typename Arg>
-struct remove_volatile<volatile Arg> { using type = Arg; };
-template<typename Arg>
-using remove_volatile_t = typename remove_volatile<Arg>::type;
-
-template<typename Arg>
-struct remove_const_volatile { using type = Arg; };
-template<typename Arg>
-struct remove_const_volatile<const Arg> { using type = Arg; };
-template<typename Arg>
-struct remove_const_volatile<volatile Arg> { using type = Arg; };
-template<typename Arg>
-struct remove_const_volatile<const volatile Arg> { using type = Arg; };
-template<typename Arg>
-using remove_const_volatile_t = typename remove_const_volatile<Arg>::type;
-
-template<typename Arg>
-struct add_const { using type = const Arg; };
-template<typename Arg>
-using add_const_t = typename add_const<Arg>::type;
-
-template<typename Arg>
-struct add_volatile { using type = volatile Arg; };
-template<typename Arg>
-using add_volatile_t = typename add_volatile<Arg>::type;
-
-template<typename Arg>
-struct add_const_volatile { using type = const volatile Arg; };
-template<typename Arg>
-using add_const_volatile_t = typename add_const_volatile<Arg>::type;
-
 /**
  * categorization traits
  */
 template<typename Arg>
-struct is_void : is_same<void, remove_const_volatile_t<Arg>> {};
+struct is_void : is_same<void, remove_const_volatile_t<Arg>> {
+};
 template<typename Arg>
 constexpr typename is_void<Arg>::value_t is_void_v = is_void<Arg>::value;
 
@@ -141,6 +28,13 @@ template<typename Arg>
 using is_pointer = _impl::is_pointer_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
 constexpr typename is_pointer<Arg>::value_t is_pointer_v = is_pointer<Arg>::value;
+
+// C++ 14
+template<typename Arg>
+struct is_null_pointer : is_same<nullptr_t, remove_const_volatile_t<Arg>> {
+};
+template<typename Arg>
+constexpr typename is_null_pointer<Arg>::value_t is_null_pointer_v = is_null_pointer<Arg>::value;
 
 template<typename Arg>
 struct is_array : false_t {};
@@ -170,7 +64,9 @@ using is_reference = disjunction<is_rvalue_reference<Arg>, is_lvalue_reference<A
 template<typename Arg>
 constexpr typename is_reference<Arg>::value_t is_reference_v = is_reference<Arg>::value;
 
-// __built_in implementation
+// begins __built_in implementation
+// These are two basic categorization type traits specified by the standards
+// but cannot be readily implemented using the language. Here they resort to compiler magic.
 template<typename Arg>
 using is_union = boolean_constant<__is_union(Arg)>;
 template<typename Arg>
@@ -180,7 +76,7 @@ template<typename Arg>
 using is_enum = boolean_constant<__is_enum(Arg)>;
 template<typename Arg>
 constexpr typename is_enum<Arg>::value_t is_enum_v = is_enum<Arg>::value;
-//
+// ends __built_in implementation
 
 namespace _impl {
 template<typename Arg>
@@ -207,22 +103,27 @@ template<typename Arg>
 struct is_member_pointer_impl : false_t {};
 template<typename Arg, typename Class>
 struct is_member_pointer_impl<Arg Class::*> : true_t {};
+template<typename Arg>
+struct is_member_function_pointer_impl : false_t {};
+template<typename Arg, typename Class>
+struct is_member_function_pointer_impl<Arg Class::*> : is_function<Arg> {};
 } // namespace _impl
 template<typename Arg>
 using is_member_pointer = _impl::is_member_pointer_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
 constexpr typename is_member_pointer<Arg>::value_t is_member_pointer_v = is_member_pointer<Arg>::value;
 
-//template<typename Arg>
-//using is_member_function_pointer = conjunction<is_member_pointer<Arg>, is_function<Arg>>;
-//template<typename Arg>
-//constexpr typename is_member_function_pointer<Arg>::value_t
-//	is_member_function_pointer_v = is_member_function_pointer<Arg>::value;
-//template<typename Arg>
-//using is_member_object_pointer = conjunction<is_member_pointer<Arg>, negation<is_function<Arg>>>;
-//template<typename Arg>
-//constexpr typename is_member_object_pointer<Arg>::value_t
-//	is_member_object_pointer_v = is_member_object_pointer<Arg>::value;
+template<typename Arg>
+using is_member_function_pointer = _impl::is_member_function_pointer_impl<remove_const_volatile_t<Arg>>;
+template<typename Arg>
+constexpr typename is_member_function_pointer<Arg>::value_t
+    is_member_function_pointer_v = is_member_function_pointer<Arg>::value;
+
+template<typename Arg>
+using is_member_object_pointer = conjunction<is_member_pointer<Arg>, negation<is_member_function_pointer<Arg>>>;
+template<typename Arg>
+constexpr typename is_member_object_pointer<Arg>::value_t
+    is_member_object_pointer_v = is_member_object_pointer<Arg>::value;
 
 namespace _impl {
 template<typename Arg>
@@ -254,6 +155,28 @@ template<typename Arg>
 constexpr typename is_integral<Arg>::value_t is_integral_v = is_integral<Arg>::value;
 
 namespace _impl {
+template<typename Arg, bool = is_integral_v<Arg>>
+struct is_signed_impl : false_t {};
+template<typename Arg>
+struct is_signed_impl<Arg, true> : boolean_constant<Arg(-1) < Arg(0)> {};
+} // namespace _impl
+template<typename Arg>
+using is_signed = _impl::is_signed_impl<Arg>;
+template<typename Arg>
+constexpr typename is_signed<Arg>::value_t is_signed_v = is_signed<Arg>::value;
+
+namespace _impl {
+template<typename Arg, bool = is_integral_v<Arg>>
+struct is_unsigned_impl : false_t {};
+template<typename Arg>
+struct is_unsigned_impl<Arg, true> : boolean_constant<Arg(0) < Arg(-1)> {};
+} // namespace _impl
+template<typename Arg>
+using is_unsigned = _impl::is_unsigned_impl<Arg>;
+template<typename Arg>
+constexpr typename is_unsigned<Arg>::value_t is_unsigned_v = is_unsigned<Arg>::value;
+
+namespace _impl {
 template<typename Arg>
 struct is_floating_point_impl : false_t {};
 #ifdef _is_floating_point_impl_macro
@@ -269,6 +192,34 @@ template<typename Arg>
 using is_floating_point = _impl::is_floating_point_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
 constexpr typename is_floating_point<Arg>::value_t is_floating_point_v = is_floating_point<Arg>::value;
+
+template<typename Arg>
+struct is_arithmetic : disjunction<is_integral<Arg>, is_floating_point<Arg>> {};
+template<typename Arg>
+constexpr typename is_arithmetic<Arg>::value_t is_arithmetic_v = is_arithmetic<Arg>::value;
+
+template<typename Arg>
+struct is_fundamental : disjunction<is_arithmetic<Arg>, is_void<Arg>, is_null_pointer<Arg>> {
+};
+template<typename Arg>
+constexpr typename is_fundamental<Arg>::value_t is_fundamental_v = is_fundamental<Arg>::value;
+
+template<typename Arg>
+struct is_compound : negation<is_fundamental<Arg>> {};
+template<typename Arg>
+constexpr typename is_compound<Arg>::value_t is_compound_v = is_compound<Arg>::value;
+
+template<typename Arg>
+struct is_scalar : disjunction<is_arithmetic<Arg>, is_enum<Arg>,
+                               is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
+};
+template<typename Arg>
+constexpr typename is_scalar<Arg>::value_t is_scalar_v = is_scalar<Arg>::value;
+
+template<typename Arg>
+struct is_object : disjunction<is_scalar<Arg>, is_array<Arg>, is_union<Arg>, is_class<Arg>> {};
+template<typename Arg>
+constexpr typename is_object<Arg>::value_t is_object_v = is_object<Arg>::value;
 } // namespace
 
-#endif //STUDIOUS_EUREKA_SRC_EUREKA_TYPE_TRAITS_H_
+#endif //STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_

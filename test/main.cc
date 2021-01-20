@@ -3,15 +3,20 @@
 //
 
 #include <iostream>
-#include "eureka/type_traits.h"
+#include "eureka/traits/traits.h"
 
 using namespace eureka;
+class X {
+ public:
+  int x;
 
+  static void p() {}
+};
 int main() {
-//  std::cout << is_member_function_pointer_v<int> << std::endl;
-//  std::cout << is_member_function_pointer_v<double> << std::endl;
-//  std::cout << is_member_function_pointer_v<int *> << std::endl;
-//  std::cout << is_member_function_pointer_v<decltype(&main)> << std::endl;
-//  std::cout << is_member_function_pointer_v<decltype(&X::x)> << std::endl;
-//  std::cout << is_member_function_pointer_v<decltype(&X::p)> << std::endl;
+  std::cout << std::boolalpha
+            << is_unsigned_v<int> << std::endl
+            << is_unsigned_v<unsigned long long> << std::endl
+            << is_unsigned_v<X> << std::endl
+            << is_unsigned_v<unsigned char> << std::endl
+            << is_unsigned_v<signed short> << std::endl;
 }
