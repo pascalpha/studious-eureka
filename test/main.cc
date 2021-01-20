@@ -12,9 +12,8 @@ class X {
 
   static void p() {}
 };
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   decay_t<decltype(main)> s;
-  decltype(s) p;
   std::cout << std::boolalpha
             << is_same_v<decay_t<const int[2]>, const int *> << std::endl
             << is_same_v<decay_t<int[2][2]>, int (*)[2]> << std::endl

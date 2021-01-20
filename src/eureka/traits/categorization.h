@@ -239,6 +239,8 @@ struct decay {
 template<typename Arg>
 using decay_t = typename decay<Arg>::type;
 
+template<typename Arg>
+add_rvalue_reference_t<Arg> declared_value() noexcept;
 } // namespace
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_
