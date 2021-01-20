@@ -3,24 +3,24 @@
 //
 
 #include <iostream>
-
-#include "eureka/traits.h"
+#include "eureka/type_traits.h"
 
 using namespace eureka;
+union T {
+  int x;
+};
 
-int k() {
-  return 0;
-}
+class X {
+  int x;
+};
 
-class clazz {
+enum x {
 
 };
 int main() {
-  auto p = []() { return 1; };
-
-  std::cout << is_object_t<int>::value << std::endl;
-  std::cout << is_object_t<double>::value << std::endl;
-  std::cout << is_object_t<decltype(main)>::value << std::endl;
-  std::cout << is_object_t<decltype(p)>::value << std::endl;
-  std::cout << is_object_t<clazz>::value << std::endl;
+  std::cout << is_integral_v<x> << std::endl;
+  std::cout << is_integral_v<int> << std::endl;
+  std::cout << is_integral_v<int &> << std::endl;
+  std::cout << is_integral_v<const bool> << std::endl;
+  std::cout << is_integral_v<const volatile wchar_t> << std::endl;
 }
