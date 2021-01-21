@@ -2,8 +2,8 @@
 // Created by admin on 2021/1/21.
 //
 
-#ifndef STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_UTILITY_H_
-#define STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_UTILITY_H_
+#ifndef STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_MISC_H_
+#define STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_MISC_H_
 
 #include "general.h"
 #include "categorization.h"
@@ -52,4 +52,4 @@ using detect_t = void;
 
 } // namespace eureka
 
-#endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_UTILITY_H_
+#endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_MISC_H_

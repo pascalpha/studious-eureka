@@ -6,7 +6,7 @@
 
 #include "general.h"
 #include "categorization.h"
-#include "utility.h"
+#include "misc.h"
 
 namespace eureka {
 namespace _impl {
@@ -85,7 +85,7 @@ template<typename Class>
 struct is_destructible_impl<enable_if_t<is_function_v<Class>, detect_t>, Class> : false_t {};
 /*unbounded arrays*/
 template<typename Class>
-struct is_destructible_impl<detect_t, Class[]> : false_t {};
+struct is_destructible_impl<enable_if_t<is_unbounded_array_v<Class>, detect_t>, Class> : false_t {};
 /*bounded arrays, candidate for trying destructing*/
 template<typename Class, size_t Num>
 struct is_destructible_impl<detect_t, Class[Num]> : try_destruct_impl<detect_t, remove_all_extents_t<Class>> {};

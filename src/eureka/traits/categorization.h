@@ -40,10 +40,24 @@ template<typename Arg>
 struct is_array : false_t {};
 template<typename Arg>
 struct is_array<Arg[]> : true_t {};
-template<typename Arg, size_t Rank>
-struct is_array<Arg[Rank]> : true_t {};
+template<typename Arg, size_t N>
+struct is_array<Arg[N]> : true_t {};
 template<typename Arg>
 constexpr typename is_array<Arg>::value_t is_array_v = is_array<Arg>::value;
+
+template<typename Arg>
+struct is_bounded_array : false_t {};
+template<typename Arg, size_t N>
+struct is_bounded_array<Arg[N]> : true_t {};
+template<typename Arg>
+constexpr typename is_bounded_array<Arg>::value_t is_bounded_array_v = is_bounded_array<Arg>::value;
+
+template<typename Arg>
+struct is_unbounded_array : false_t {};
+template<typename Arg>
+struct is_unbounded_array<Arg[]> : true_t {};
+template<typename Arg>
+constexpr typename is_unbounded_array<Arg>::value_t is_unbounded_array_v = is_unbounded_array<Arg>::value;
 
 template<typename Arg>
 struct is_lvalue_reference : false_t {};

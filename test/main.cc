@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include "eureka/traits/traits.h"
+#include "eureka/utility/utility.h"
 
 using namespace eureka;
 class X {
@@ -23,16 +24,13 @@ class X {
 };
 
 int main(int argc, char *argv[]) {
+  int x;
+  int &y = x;
 
   std::cout << std::boolalpha
-			<< is_destructible_v<std::vector<int> &> << std::endl
-			<< is_destructible_v<int> << std::endl
-			<< is_destructible_v<double> << std::endl
-			<< is_destructible_v<std::string> << std::endl
-			<< is_destructible_v<X&> << std::endl
-			<< is_destructible_v<int[][5][7]> << std::endl
-			<< is_destructible_v<int[]> << std::endl
-			<< is_destructible_v<decltype(main)> << std::endl
-			<< is_destructible_v<const volatile void> << std::endl
+			<< is_same_v<decltype(move(x)), int &&> << std::endl
+			<< is_same_v<decltype(move(y)), int &&> << std::endl
+			<< is_same_v<int, int &&> << std::endl
+			<< is_same_v<decltype(move(y)), int &&> << std::endl
 			<< std::endl;
 }
