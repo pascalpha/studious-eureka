@@ -10,27 +10,35 @@
 using namespace eureka;
 class X {
  public:
-  explicit X(double &&x) {}
+  explicit X() {
+    std::cout << "default" << std::endl;
+  };
 
-  explicit X(const std::vector<char> &x) {}
+  X(const X &x) {
+    std::cout << "copy" << std::endl;
+
+  };
+
+  X(X &&x) noexcept {
+    std::cout << "move" << std::endl;
+
+  }
 
   explicit X(std::vector<char> &&x) {}
-
-  explicit X(const X &x) = delete;
-
-  explicit X(X &&x) = delete;
-
-  ~X() = delete;
 };
 
 int main(int argc, char *argv[]) {
-  int x;
-  int &y = x;
 
-  std::cout << std::boolalpha
-			<< is_same_v<decltype(move(x)), int &&> << std::endl
-			<< is_same_v<decltype(move(y)), int &&> << std::endl
-			<< is_same_v<int, int &&> << std::endl
-			<< is_same_v<decltype(move(y)), int &&> << std::endl
-			<< std::endl;
+  X x;
+  X y;
+
+  X &z = x;
+  X &&t = X();
+
+  pair<X, X> r;
+  pair<X, X> t1(x, y);
+  pair<X, X> t2(z, move(t));
+  pair<X, X> t3(x, z);
+  pair<X, X> t4(move(x), z);
+  pair<X, X> t5(move(x), move(z));
 }

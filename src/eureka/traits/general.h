@@ -46,7 +46,7 @@ struct disjunction<> : false_t {};
 template<typename Disjunct, typename... Disjuncts>
 struct disjunction<Disjunct, Disjuncts...> : conditional_t<Disjunct::value, true_t, disjunction<Disjuncts...>> {};
 template<typename... Disjuncts>
-typename disjunction<Disjuncts...>::value_t disjunction_v = disjunction<Disjuncts...>::value;
+constexpr typename disjunction<Disjuncts...>::value_t disjunction_v = disjunction<Disjuncts...>::value;
 
 // and-ing
 template<typename... Conjuncts>
@@ -56,13 +56,13 @@ struct conjunction<> : true_t {};
 template<typename Conjunct, typename... Conjuncts>
 struct conjunction<Conjunct, Conjuncts...> : conditional_t<Conjunct::value, conjunction<Conjuncts...>, false_t> {};
 template<typename... Conjuncts>
-typename conjunction<Conjuncts...>::value_t conjunction_v = conjunction<Conjuncts...>::value;
+constexpr typename conjunction<Conjuncts...>::value_t conjunction_v = conjunction<Conjuncts...>::value;
 
 // not-ing
 template<typename Clause>
 using negation = boolean_constant<!Clause::value>;
 template<typename Clause>
-typename negation<Clause>::value_t negation_v = negation<Clause>::value;
+constexpr typename negation<Clause>::value_t negation_v = negation<Clause>::value;
 
 template<typename... Args>
 struct is_same : false_t {};
