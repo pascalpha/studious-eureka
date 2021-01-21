@@ -31,6 +31,13 @@ struct conditional<true, Then, Else> { using type = Then; };
 template<bool If, typename Then, typename Else>
 using conditional_t = typename conditional<If, Then, Else>::type;
 
+template<bool Condition, typename Potent>
+struct enable_if {};
+template<typename Potent>
+struct enable_if<true, Potent> { using type = Potent; };
+template<bool Condition, typename Potent>
+using enable_if_t = typename enable_if<Condition, Potent>::type;
+
 // or-ing
 template<typename... Disjuncts>
 struct disjunction;

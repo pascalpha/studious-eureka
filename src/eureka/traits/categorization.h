@@ -117,13 +117,13 @@ template<typename Arg>
 using is_member_function_pointer = _impl::is_member_function_pointer_impl<remove_const_volatile_t<Arg>>;
 template<typename Arg>
 constexpr typename is_member_function_pointer<Arg>::value_t
-    is_member_function_pointer_v = is_member_function_pointer<Arg>::value;
+	is_member_function_pointer_v = is_member_function_pointer<Arg>::value;
 
 template<typename Arg>
 using is_member_object_pointer = conjunction<is_member_pointer<Arg>, negation<is_member_function_pointer<Arg>>>;
 template<typename Arg>
 constexpr typename is_member_object_pointer<Arg>::value_t
-    is_member_object_pointer_v = is_member_object_pointer<Arg>::value;
+	is_member_object_pointer_v = is_member_object_pointer<Arg>::value;
 
 namespace _impl {
 template<typename Arg>
@@ -158,6 +158,7 @@ namespace _impl {
 template<typename Arg, bool = is_integral_v<Arg>>
 struct is_signed_impl : false_t {};
 template<typename Arg>
+/*for signed integer, -1 < 0*/
 struct is_signed_impl<Arg, true> : boolean_constant<Arg(-1) < Arg(0)> {};
 } // namespace _impl
 template<typename Arg>
@@ -169,6 +170,7 @@ namespace _impl {
 template<typename Arg, bool = is_integral_v<Arg>>
 struct is_unsigned_impl : false_t {};
 template<typename Arg>
+/*for unsigned integer, -1 underflows to a large positive number*/
 struct is_unsigned_impl<Arg, true> : boolean_constant<Arg(0) < Arg(-1)> {};
 } // namespace _impl
 template<typename Arg>
@@ -211,7 +213,7 @@ constexpr typename is_compound<Arg>::value_t is_compound_v = is_compound<Arg>::v
 
 template<typename Arg>
 struct is_scalar : disjunction<is_arithmetic<Arg>, is_enum<Arg>,
-                               is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
+							   is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
 };
 template<typename Arg>
 constexpr typename is_scalar<Arg>::value_t is_scalar_v = is_scalar<Arg>::value;
@@ -221,26 +223,5 @@ struct is_object : disjunction<is_scalar<Arg>, is_array<Arg>, is_union<Arg>, is_
 template<typename Arg>
 constexpr typename is_object<Arg>::value_t is_object_v = is_object<Arg>::value;
 
-template<typename Arg>
-struct decay {
- protected:
-  using unreferenced = remove_reference_t<Arg>;
- public:
-  using type = conditional_t< /*if*/
-      is_array_v<unreferenced>, /*is array*/
-      remove_extent_t<unreferenced> *, /*then decay first dimension*/
-      conditional_t< /*else if*/
-          is_function_v<unreferenced>, /*is function*/
-          add_pointer_t<unreferenced>, /*decay to pointer*/
-          remove_const_volatile_t<unreferenced> /*remove cv qualifiers*/
-      >
-  >;
-};
-template<typename Arg>
-using decay_t = typename decay<Arg>::type;
-
-template<typename Arg>
-add_rvalue_reference_t<Arg> declared_value() noexcept;
-} // namespace
-
+} // namespace eureka
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_

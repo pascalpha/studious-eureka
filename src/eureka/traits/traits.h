@@ -7,4 +7,5 @@
 #include "categorization.h"
 #include "general.h"
 #include "transformation.h"
+#include "utility.h"
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_TRAITS_H_
