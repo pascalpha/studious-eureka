@@ -6,6 +6,20 @@
 
 namespace eureka {
 
+#define eureka_value_helper_macro(_type)\
+template<typename Arg>\
+constexpr typename _type<Arg>::value_t _type##_v = _type<Arg>::value
+
+#define eureka_member_type_helper_macro(type)\
+namespace _impl {\
+template<typename Arg, typename>\
+struct has_##type##_impl : false_t {};\
+template<typename Arg>\
+struct has_##type##_impl<Arg, valid_t<typename Arg::type>> : true_t {};\
+}\
+template<typename Arg>\
+constexpr bool has_##type = _impl::has_##type##_impl<Arg, placeholder_t>::value
+
 using nullptr_t = decltype(nullptr);
 using size_t = decltype(sizeof(nullptr_t));
 using ptrdiff_t = signed long;

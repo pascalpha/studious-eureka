@@ -49,19 +49,6 @@ template<typename...>
 using valid_t = void;
 // used for template deduction
 using placeholder_t = void;
-
-#define GENERATE_MEMBER_TYPE_DETECTOR(HAS_SOME)\
-namespace _impl {\
-template<typename Arg, typename>\
-struct has_##HAS_SOME##_impl : false_t {};\
-template<typename Arg>\
-struct has_##HAS_SOME##_impl<Arg, valid_t<typename Arg::HAS_SOME>> : true_t {};\
-}\
-template<typename Arg>\
-constexpr bool has_##HAS_SOME = _impl::has_##HAS_SOME##_impl<Arg, placeholder_t>::value;
-
-GENERATE_MEMBER_TYPE_DETECTOR(value_t);
-
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_MISC_H_

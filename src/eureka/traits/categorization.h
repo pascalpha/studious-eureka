@@ -15,8 +15,7 @@ namespace eureka {
 template<typename Arg>
 struct is_void : is_same<void, remove_const_volatile_t<Arg>> {
 };
-template<typename Arg>
-constexpr typename is_void<Arg>::value_t is_void_v = is_void<Arg>::value;
+eureka_value_helper_macro(is_void);
 
 namespace _impl {
 template<typename Arg>
@@ -26,15 +25,13 @@ struct is_pointer_impl<Arg *> : true_t {};
 } // namespace _impl
 template<typename Arg>
 using is_pointer = _impl::is_pointer_impl<remove_const_volatile_t<Arg>>;
-template<typename Arg>
-constexpr typename is_pointer<Arg>::value_t is_pointer_v = is_pointer<Arg>::value;
+eureka_value_helper_macro(is_pointer);
 
 // C++ 14
 template<typename Arg>
 struct is_null_pointer : is_same<nullptr_t, remove_const_volatile_t<Arg>> {
 };
-template<typename Arg>
-constexpr typename is_null_pointer<Arg>::value_t is_null_pointer_v = is_null_pointer<Arg>::value;
+eureka_value_helper_macro(is_null_pointer);
 
 template<typename Arg>
 struct is_array : false_t {};
@@ -42,54 +39,46 @@ template<typename Arg>
 struct is_array<Arg[]> : true_t {};
 template<typename Arg, size_t N>
 struct is_array<Arg[N]> : true_t {};
-template<typename Arg>
-constexpr typename is_array<Arg>::value_t is_array_v = is_array<Arg>::value;
+eureka_value_helper_macro(is_array);
 
 template<typename Arg>
 struct is_bounded_array : false_t {};
 template<typename Arg, size_t N>
 struct is_bounded_array<Arg[N]> : true_t {};
-template<typename Arg>
-constexpr typename is_bounded_array<Arg>::value_t is_bounded_array_v = is_bounded_array<Arg>::value;
+eureka_value_helper_macro(is_bounded_array);
 
 template<typename Arg>
 struct is_unbounded_array : false_t {};
 template<typename Arg>
 struct is_unbounded_array<Arg[]> : true_t {};
-template<typename Arg>
-constexpr typename is_unbounded_array<Arg>::value_t is_unbounded_array_v = is_unbounded_array<Arg>::value;
+eureka_value_helper_macro(is_unbounded_array);
 
 template<typename Arg>
 struct is_lvalue_reference : false_t {};
 template<typename Arg>
 struct is_lvalue_reference<Arg &> : true_t {};
-template<typename Arg>
-constexpr typename is_lvalue_reference<Arg>::value_t is_lvalue_reference_v = is_lvalue_reference<Arg>::value;
+eureka_value_helper_macro(is_lvalue_reference);
 
 template<typename Arg>
 struct is_rvalue_reference : false_t {};
 template<typename Arg>
 struct is_rvalue_reference<Arg &&> : true_t {};
-template<typename Arg>
-constexpr typename is_rvalue_reference<Arg>::value_t is_rvalue_reference_v = is_rvalue_reference<Arg>::value;
+eureka_value_helper_macro(is_rvalue_reference);
 
 template<typename Arg>
 using is_reference = disjunction<is_rvalue_reference<Arg>, is_lvalue_reference<Arg>>;
-template<typename Arg>
-constexpr typename is_reference<Arg>::value_t is_reference_v = is_reference<Arg>::value;
+eureka_value_helper_macro(is_reference);
 
 // begins __built_in implementation
 // These are two basic categorization type traits specified by the standards
 // but cannot be readily implemented using the language. Here they resort to compiler magic.
 template<typename Arg>
 using is_union = boolean_constant<__is_union(Arg)>;
-template<typename Arg>
-constexpr typename is_union<Arg>::value_t is_union_v = is_union<Arg>::value;
+eureka_value_helper_macro(is_union);
 
 template<typename Arg>
 using is_enum = boolean_constant<__is_enum(Arg)>;
-template<typename Arg>
-constexpr typename is_enum<Arg>::value_t is_enum_v = is_enum<Arg>::value;
+eureka_value_helper_macro(is_enum);
 // ends __built_in implementation
 
 namespace _impl {
@@ -104,13 +93,11 @@ constexpr typename is_class_or_union<Arg>::value_t is_class_or_union_v = is_clas
 } // namespace _impl
 template<typename Arg>
 using is_class = conjunction<_impl::is_class_or_union<Arg>, negation<is_union<Arg>>>;
-template<typename Arg>
-constexpr typename is_class<Arg>::value_t is_class_v = is_class<Arg>::value;
+eureka_value_helper_macro(is_class);
 
 template<typename Arg>
 using is_function = conjunction<negation<is_const<const Arg>>, negation<is_reference<Arg>>>;
-template<typename Arg>
-constexpr typename is_function<Arg>::value_t is_function_v = is_function<Arg>::value;
+eureka_value_helper_macro(is_function);
 
 namespace _impl {
 template<typename Arg>
@@ -124,20 +111,15 @@ struct is_member_function_pointer_impl<Arg Class::*> : is_function<Arg> {};
 } // namespace _impl
 template<typename Arg>
 using is_member_pointer = _impl::is_member_pointer_impl<remove_const_volatile_t<Arg>>;
-template<typename Arg>
-constexpr typename is_member_pointer<Arg>::value_t is_member_pointer_v = is_member_pointer<Arg>::value;
+eureka_value_helper_macro(is_member_pointer);
 
 template<typename Arg>
 using is_member_function_pointer = _impl::is_member_function_pointer_impl<remove_const_volatile_t<Arg>>;
-template<typename Arg>
-constexpr typename is_member_function_pointer<Arg>::value_t
-	is_member_function_pointer_v = is_member_function_pointer<Arg>::value;
+eureka_value_helper_macro(is_member_function_pointer);
 
 template<typename Arg>
 using is_member_object_pointer = conjunction<is_member_pointer<Arg>, negation<is_member_function_pointer<Arg>>>;
-template<typename Arg>
-constexpr typename is_member_object_pointer<Arg>::value_t
-	is_member_object_pointer_v = is_member_object_pointer<Arg>::value;
+eureka_value_helper_macro(is_member_object_pointer);
 
 namespace _impl {
 template<typename Arg>
@@ -165,8 +147,7 @@ _is_integral_impl_macro(unsigned long long);
 } // namespace _impl
 template<typename Arg>
 using is_integral = _impl::is_integral_impl<remove_const_volatile_t<Arg>>;
-template<typename Arg>
-constexpr typename is_integral<Arg>::value_t is_integral_v = is_integral<Arg>::value;
+eureka_value_helper_macro(is_integral);
 
 namespace _impl {
 template<typename Arg, bool = is_integral_v<Arg>>
@@ -177,8 +158,7 @@ struct is_signed_impl<Arg, true> : boolean_constant<Arg(-1) < Arg(0)> {};
 } // namespace _impl
 template<typename Arg>
 using is_signed = _impl::is_signed_impl<Arg>;
-template<typename Arg>
-constexpr typename is_signed<Arg>::value_t is_signed_v = is_signed<Arg>::value;
+eureka_value_helper_macro(is_signed);
 
 namespace _impl {
 template<typename Arg, bool = is_integral_v<Arg>>
@@ -189,8 +169,7 @@ struct is_unsigned_impl<Arg, true> : boolean_constant<Arg(0) < Arg(-1)> {};
 } // namespace _impl
 template<typename Arg>
 using is_unsigned = _impl::is_unsigned_impl<Arg>;
-template<typename Arg>
-constexpr typename is_unsigned<Arg>::value_t is_unsigned_v = is_unsigned<Arg>::value;
+eureka_value_helper_macro(is_unsigned);
 
 namespace _impl {
 template<typename Arg>
@@ -206,36 +185,30 @@ _is_floating_point_impl_macro(long double);
 } // namespace _impl
 template<typename Arg>
 using is_floating_point = _impl::is_floating_point_impl<remove_const_volatile_t<Arg>>;
-template<typename Arg>
-constexpr typename is_floating_point<Arg>::value_t is_floating_point_v = is_floating_point<Arg>::value;
+eureka_value_helper_macro(is_floating_point);
 
 template<typename Arg>
 struct is_arithmetic : disjunction<is_integral<Arg>, is_floating_point<Arg>> {};
-template<typename Arg>
-constexpr typename is_arithmetic<Arg>::value_t is_arithmetic_v = is_arithmetic<Arg>::value;
+eureka_value_helper_macro(is_arithmetic);
 
 template<typename Arg>
 struct is_fundamental : disjunction<is_arithmetic<Arg>, is_void<Arg>, is_null_pointer<Arg>> {
 };
-template<typename Arg>
-constexpr typename is_fundamental<Arg>::value_t is_fundamental_v = is_fundamental<Arg>::value;
+eureka_value_helper_macro(is_fundamental);
 
 template<typename Arg>
 struct is_compound : negation<is_fundamental<Arg>> {};
-template<typename Arg>
-constexpr typename is_compound<Arg>::value_t is_compound_v = is_compound<Arg>::value;
+eureka_value_helper_macro(is_compound);
 
 template<typename Arg>
 struct is_scalar : disjunction<is_arithmetic<Arg>, is_enum<Arg>,
-							   is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
+                               is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
 };
-template<typename Arg>
-constexpr typename is_scalar<Arg>::value_t is_scalar_v = is_scalar<Arg>::value;
+eureka_value_helper_macro(is_scalar);
 
 template<typename Arg>
 struct is_object : disjunction<is_scalar<Arg>, is_array<Arg>, is_union<Arg>, is_class<Arg>> {};
-template<typename Arg>
-constexpr typename is_object<Arg>::value_t is_object_v = is_object<Arg>::value;
+eureka_value_helper_macro(is_object);
 
 } // namespace eureka
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_CATEGORIZATION_H_
