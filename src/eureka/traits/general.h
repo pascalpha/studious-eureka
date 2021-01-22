@@ -8,6 +8,7 @@ namespace eureka {
 
 using nullptr_t = decltype(nullptr);
 using size_t = decltype(sizeof(nullptr_t));
+using ptrdiff_t = signed long;
 
 template<typename Arithmetic, Arithmetic Value>
 struct arithmetic_constant {

@@ -122,5 +122,6 @@ struct add_pointer : decltype(_impl::add_pointer_impl<Arg>(nullptr)) {};
 template<typename Arg>
 using add_pointer_t = typename add_pointer<Arg>::type;
 
+
 } // namespace eureka
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_TRANSFORMATION_H_

@@ -15,17 +15,17 @@ struct is_constructible_impl : false_t {};
 template<typename Class, typename... Args>
 struct is_constructible_impl<
 	enable_if_t<(is_reference_v<Class> || is_object_v<Class>)
-					&& !(is_rvalue_reference_v<Class> && conjunction_v<is_lvalue_reference<Args>...>), detect_t>,
+					&& !(is_rvalue_reference_v<Class> && conjunction_v<is_lvalue_reference<Args>...>), placeholder_t>,
 	valid_t<decltype(Class(declared_value<Args>()...))>, Class, Args...> : true_t {};
 template<typename Class, typename ... Args>
-struct is_constructible_impl<enable_if_t<!is_reference_v<Class> && !is_object_v<Class>, detect_t>,
+struct is_constructible_impl<enable_if_t<!is_reference_v<Class> && !is_object_v<Class>, placeholder_t>,
 							 valid_t<decltype(::new Class(declared_value<Args>()...))>, Class, Args...>
 	: true_t {};
 template<typename Class>
-struct is_constructible_impl<enable_if_t<!is_reference_v<Class>, detect_t>, detect_t, Class &&, Class &> : false_t {};
+struct is_constructible_impl<enable_if_t<!is_reference_v<Class>, placeholder_t>, placeholder_t, Class &&, Class &> : false_t {};
 } // namespace _impl
 template<typename Class, typename... Arg>
-using is_constructible = _impl::is_constructible_impl<detect_t, detect_t, Class, Arg...>;
+using is_constructible = _impl::is_constructible_impl<placeholder_t, placeholder_t, Class, Arg...>;
 template<typename Class, typename... Arg>
 constexpr typename is_constructible<Class, Arg...>::value_t is_constructible_v = is_constructible<Class, Arg...>::value;
 
@@ -55,7 +55,7 @@ struct is_assignable_impl<
 	valid_t<decltype(declared_value<Class>() = declared_value<Other>())>, Class, Other> : true_t {};
 }
 template<typename Class, typename Other>
-using is_assignable = _impl::is_assignable_impl<detect_t, Class, Other>;
+using is_assignable = _impl::is_assignable_impl<placeholder_t, Class, Other>;
 template<typename Class, typename Other>
 constexpr typename is_assignable<Class, Other>::value_t is_assignable_v = is_assignable<Class, Other>::value;
 
@@ -83,35 +83,35 @@ template<typename, typename Class>
 struct is_destructible_impl : false_t {};
 /*reference types*/
 template<typename Class>
-struct is_destructible_impl<enable_if_t<is_reference_v<Class>, detect_t>, Class> : true_t {};
+struct is_destructible_impl<enable_if_t<is_reference_v<Class>, placeholder_t>, Class> : true_t {};
 /*const volatile qualified void*/
 template<typename Class>
-struct is_destructible_impl<enable_if_t<is_void_v<Class>, detect_t>, Class> : false_t {};
+struct is_destructible_impl<enable_if_t<is_void_v<Class>, placeholder_t>, Class> : false_t {};
 /*function types*/
 template<typename Class>
-struct is_destructible_impl<enable_if_t<is_function_v<Class>, detect_t>, Class> : false_t {};
+struct is_destructible_impl<enable_if_t<is_function_v<Class>, placeholder_t>, Class> : false_t {};
 /*unbounded arrays*/
 template<typename Class>
-struct is_destructible_impl<enable_if_t<is_unbounded_array_v<Class>, detect_t>, Class> : false_t {};
+struct is_destructible_impl<enable_if_t<is_unbounded_array_v<Class>, placeholder_t>, Class> : false_t {};
 /*bounded arrays, candidate for trying destructing*/
 template<typename Class, size_t Num>
-struct is_destructible_impl<detect_t, Class[Num]> : try_destruct_impl<detect_t, remove_all_extents_t<Class>> {};
+struct is_destructible_impl<placeholder_t, Class[Num]> : try_destruct_impl<placeholder_t, remove_all_extents_t<Class>> {};
 /*object type, candidate for trying destructing*/
 template<typename Class>
-struct is_destructible_impl<enable_if_t<is_object_v<Class> && !is_array_v<Class>, detect_t>, Class>
-	: try_destruct_impl<detect_t, remove_all_extents_t<Class>> {};
+struct is_destructible_impl<enable_if_t<is_object_v<Class> && !is_array_v<Class>, placeholder_t>, Class>
+	: try_destruct_impl<placeholder_t, remove_all_extents_t<Class>> {};
 }  // namespace _impl
 template<typename Class>
-using is_destructible = _impl::is_destructible_impl<detect_t, Class>;
+using is_destructible = _impl::is_destructible_impl<placeholder_t, Class>;
 template<typename Class>
 constexpr typename is_destructible<Class>::value_t is_destructible_v = is_destructible<Class>::value;
 
 namespace _impl {
-template<typename Class, typename =  detect_t>
+template<typename Class, typename =  placeholder_t>
 struct is_returnable_impl : false_t {};
 template<typename Class>
 struct is_returnable_impl<Class, valid_t<Class(*)()>> : true_t {};
-template<typename From, typename To, typename = detect_t>
+template<typename From, typename To, typename = placeholder_t>
 struct is_implicitly_convertible_impl : false_t {};
 template<typename From, typename To>
 struct is_implicitly_convertible_impl<

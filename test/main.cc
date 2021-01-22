@@ -7,7 +7,6 @@
 
 #include "eureka/traits/traits.h"
 #include "eureka/utility/utility.h"
-
 using namespace eureka;
 class X {
  public:
@@ -28,6 +27,7 @@ class X {
   explicit X(std::vector<char> &&x) {}
 };
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+  std::cout << has_value_t<int> << std::endl;
 }
