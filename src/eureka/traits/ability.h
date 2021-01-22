@@ -10,14 +10,23 @@
 
 namespace eureka {
 namespace _impl {
-template<typename, typename Class, typename... Args>
+template<typename, typename, typename Class, typename... Args>
 struct is_constructible_impl : false_t {};
-// use global new operator to avoid C-style cast
 template<typename Class, typename... Args>
-struct is_constructible_impl<valid_t<decltype(::new Class(declared_value<Args>()...))>, Class, Args...> : true_t {};
+struct is_constructible_impl<
+	enable_if_t<(is_reference_v<Class> || is_object_v<Class>)
+			&& !(is_rvalue_reference_v<Class> && conjunction_v<is_lvalue_reference<Args>...>), detect_t>,
+	valid_t<decltype(Class(declared_value<Args>()...))>, Class, Args...> : true_t {};
+template<typename Class, typename ... Args>
+struct is_constructible_impl<enable_if_t<!is_reference_v<Class> && !is_object_v<Class>, detect_t>,
+							 valid_t<decltype(::new Class(declared_value<Args>()...))>, Class, Args...>
+	: true_t {
+};
+template<typename Class>
+struct is_constructible_impl<enable_if_t<!is_reference_v<Class>, detect_t>, detect_t, Class &&, Class &> : false_t {};
 } // namespace _impl
 template<typename Class, typename... Arg>
-using is_constructible = _impl::is_constructible_impl<detect_t, Class, Arg...>;
+using is_constructible = _impl::is_constructible_impl<detect_t, detect_t, Class, Arg...>;
 template<typename Class, typename... Arg>
 constexpr typename is_constructible<Class, Arg...>::value_t is_constructible_v = is_constructible<Class, Arg...>::value;
 

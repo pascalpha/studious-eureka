@@ -8,16 +8,21 @@
 #include "eureka/traits/transformation.h"
 
 namespace eureka {
+/*cast a value to rvalue reference if referencable*/
 template<typename Arg>
 constexpr auto move(Arg &&arg) noexcept -> decltype(auto) {
   return static_cast<remove_reference_t<Arg> &&>(arg);
 }
 
+/*forward a value as lvalue reference*/
+/*Arg is lvalue reference type*/
 template<typename Arg>
 constexpr Arg &&forward(remove_reference_t<Arg> &arg) noexcept {
   return static_cast<Arg &&>(arg);
 }
 
+/*forward a value as rvalue reference*/
+/*Arg is value type*/
 template<typename Arg>
 constexpr Arg &&forward(remove_reference_t<Arg> &&arg) noexcept {
   static_assert(!std::is_lvalue_reference<Arg>::value, "forwarding as lvalue reference");
@@ -32,15 +37,22 @@ struct pair {
   first_type first;
   second_type second;
 
-  template<typename ArgFirst = First, typename ArgSecond = Second, typename =
-  enable_if_t<conjunction_v<is_default_constructible < ArgFirst>, is_default_constructible<ArgSecond>>, detect_t>>
+  template<typename F = First, typename S = Second, typename =
+  enable_if_t<conjunction_v<is_default_constructible < F>, is_default_constructible<S>>, detect_t>>
   explicit
+  constexpr
   pair() : first(), second() {}
 
-  template<typename ArgFirst, typename ArgSecond, typename =
-  enable_if_t<conjunction_v<is_constructible < First, ArgFirst>, is_constructible<Second, ArgSecond>>, detect_t>>
+  template<typename F, typename S, typename =
+  enable_if_t<conjunction_v<is_constructible < First, F>, is_constructible<Second, S>>, detect_t>>
   explicit
-  pair(ArgFirst &&f, ArgSecond &&s) : first(forward<ArgFirst>(f)), second(forward<ArgSecond>(s)) {}
+  constexpr
+  pair(F &&f, S &&s) : first(forward<F>(f)), second(forward<S>(s)) {}
+
+  template<typename F = First, typename S = Second, typename =
+  enable_if_t<conjunction_v<is_constructible < First, F &&>, is_constructible<Second, S &&>>, detect_t>>
+  explicit
+  constexpr pair(pair<F, S> &&other) : first(forward<F>(other.first)), second(forward<S>(other.second)) {}
 };
 }
 
