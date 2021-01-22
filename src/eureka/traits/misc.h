@@ -21,8 +21,7 @@ struct decay {
   is_function_v<unreferenced>, /*is function*/
   add_pointer_t<unreferenced>, /*decay to pointer*/
   remove_const_volatile_t<unreferenced> /*remove cv qualifiers*/
-  >
-  >;
+  >>;
 };
 template<typename Arg>
 using decay_t = typename decay<Arg>::type;

@@ -28,17 +28,6 @@ class X {
   explicit X(std::vector<char> &&x) {}
 };
 
-template<typename T>
-void func(T &&t) {
-  X x = forward<T>(t);
-}
-
-class E {
- public:
-  template<class T>
-  E(T &&) {}
-};
-
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
 }
