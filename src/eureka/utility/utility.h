@@ -28,32 +28,6 @@ constexpr Arg &&forward(remove_reference_t<Arg> &&arg) noexcept {
   static_assert(!std::is_lvalue_reference<Arg>::value, "forwarding as lvalue reference");
   return static_cast<Arg &&>(arg);
 }
-
-template<typename First, typename Second>
-struct pair {
-  using first_type = First;
-  using second_type = Second;
-
-  first_type first;
-  second_type second;
-
-  template<typename F = First, typename S = Second, typename =
-  enable_if_t<conjunction_v<is_default_constructible < F>, is_default_constructible<S>>, detect_t>>
-  explicit
-  constexpr
-  pair() : first(), second() {}
-
-  template<typename F, typename S, typename =
-  enable_if_t<conjunction_v<is_constructible < First, F>, is_constructible<Second, S>>, detect_t>>
-  explicit
-  constexpr
-  pair(F &&f, S &&s) : first(forward<F>(f)), second(forward<S>(s)) {}
-
-  template<typename F = First, typename S = Second, typename =
-  enable_if_t<conjunction_v<is_constructible < First, F &&>, is_constructible<Second, S &&>>, detect_t>>
-  explicit
-  constexpr pair(pair<F, S> &&other) : first(forward<F>(other.first)), second(forward<S>(other.second)) {}
-};
 }
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_UTILITY_H_

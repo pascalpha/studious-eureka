@@ -12,7 +12,7 @@ using namespace eureka;
 class X {
  public:
   explicit X() {
-	std::cout << "default" << std::endl;
+	// std::cout << "default" << std::endl;
   };
 
   X(const X &x) {
@@ -28,15 +28,17 @@ class X {
   explicit X(std::vector<char> &&x) {}
 };
 
-int main([[maybe_unused]] int argc, char *argv[]) {
+template<typename T>
+void func(T &&t) {
+  X x = forward<T>(t);
+}
 
-  X x;
-  X y;
+class E {
+ public:
+  template<class T>
+  E(T &&) {}
+};
 
-  std::cout << std::boolalpha
-			<< is_constructible_v<X &&, X &> << std::endl
-			<< std::is_constructible_v<X &&, X &> << std::endl
-	//
-	  ;
-  std::cout << "..............." << std::endl;
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+
 }

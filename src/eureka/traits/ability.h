@@ -15,13 +15,12 @@ struct is_constructible_impl : false_t {};
 template<typename Class, typename... Args>
 struct is_constructible_impl<
 	enable_if_t<(is_reference_v<Class> || is_object_v<Class>)
-			&& !(is_rvalue_reference_v<Class> && conjunction_v<is_lvalue_reference<Args>...>), detect_t>,
+					&& !(is_rvalue_reference_v<Class> && conjunction_v<is_lvalue_reference<Args>...>), detect_t>,
 	valid_t<decltype(Class(declared_value<Args>()...))>, Class, Args...> : true_t {};
 template<typename Class, typename ... Args>
 struct is_constructible_impl<enable_if_t<!is_reference_v<Class> && !is_object_v<Class>, detect_t>,
 							 valid_t<decltype(::new Class(declared_value<Args>()...))>, Class, Args...>
-	: true_t {
-};
+	: true_t {};
 template<typename Class>
 struct is_constructible_impl<enable_if_t<!is_reference_v<Class>, detect_t>, detect_t, Class &&, Class &> : false_t {};
 } // namespace _impl
@@ -53,8 +52,7 @@ template<typename, typename Class, typename Other>
 struct is_assignable_impl : false_t {};
 template<typename Class, typename Other>
 struct is_assignable_impl<
-	valid_t<decltype(declared_value<Class>() = declared_value<Other>())>, Class, Other> : true_t {
-};
+	valid_t<decltype(declared_value<Class>() = declared_value<Other>())>, Class, Other> : true_t {};
 }
 template<typename Class, typename Other>
 using is_assignable = _impl::is_assignable_impl<detect_t, Class, Other>;
@@ -101,13 +99,29 @@ struct is_destructible_impl<detect_t, Class[Num]> : try_destruct_impl<detect_t, 
 /*object type, candidate for trying destructing*/
 template<typename Class>
 struct is_destructible_impl<enable_if_t<is_object_v<Class> && !is_array_v<Class>, detect_t>, Class>
-	: try_destruct_impl<detect_t, remove_all_extents_t<Class>> {
-};
+	: try_destruct_impl<detect_t, remove_all_extents_t<Class>> {};
 }  // namespace _impl
 template<typename Class>
 using is_destructible = _impl::is_destructible_impl<detect_t, Class>;
 template<typename Class>
 constexpr typename is_destructible<Class>::value_t is_destructible_v = is_destructible<Class>::value;
+
+namespace _impl {
+template<typename Class, typename =  detect_t>
+struct is_returnable_impl : false_t {};
+template<typename Class>
+struct is_returnable_impl<Class, valid_t<Class(*)()>> : true_t {};
+template<typename From, typename To, typename = detect_t>
+struct is_implicitly_convertible_impl : false_t {};
+template<typename From, typename To>
+struct is_implicitly_convertible_impl<
+	From, To, valid_t<decltype(declared_value<void (&)(To)>()(declared_value<From>()))>> : true_t {};
+}  // namespace _impl
+template<typename From, typename To>
+using is_convertible = boolean_constant<(_impl::is_implicitly_convertible_impl<From, To>::value &&
+	_impl::is_returnable_impl<To>::value) || (is_void_v<From> && is_void_v<To>)>;
+template<typename From, typename To>
+constexpr typename is_convertible<From, To>::value_t is_convertible_v = is_convertible<From, To>::value;
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_ABILITY_H_
