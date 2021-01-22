@@ -22,15 +22,15 @@ struct allocator {
   template<typename Rebind>
   constexpr explicit allocator(const allocator<Rebind> &other) {};
 
-  constexpr ~allocator() = default;
+  ~allocator() = default;
 
   [[nodiscard]] constexpr Arg *allocate(size_t n) {
-	// throws bac_array_new_length
-	return ::operator new(sizeof(Arg) * n);
+    // throws bac_array_new_length
+    return ::operator new(sizeof(Arg) * n);
   }
 
-  constexpr void deallocate(T *ptr, size_t n) {
-	::operator delete(ptr);
+  constexpr void deallocate(Arg *ptr, size_t n) {
+    ::operator delete(ptr);
   }
 };
 
@@ -43,9 +43,8 @@ constexpr bool operator==(const allocator<A> &f, const allocator<B> &s) {
 template<typename Alloc>
 struct allocator_access {
   using allocator_t = Alloc;
-  using value_t = Alloc::value_t;
+  using value_t = typename Alloc::value_t;
   using pointer_t = value_t *;
-  using const_pointer_t =
 };
 }  // eureka
 
