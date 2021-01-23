@@ -8,11 +8,14 @@
 #include "eureka/traits/traits.h"
 #include "eureka/utility/utility.h"
 
-#include "eureka/memory/pointer_access.h"
+#include "eureka/memory/pointer.h"
 #include "eureka/memory/general.h"
+#include "eureka/memory/allocator.h"
 
 using namespace eureka;
 class X {
+  int x = 0;
+
  public:
   explicit X() {
     std::cout << "default" << std::endl;
@@ -28,7 +31,9 @@ class X {
 
   }
 
-  explicit X(std::vector<char> &&x) {}
+  ~X() {
+    std::cout << "destruct" << std::endl;
+  }
 };
 
 template<typename A, typename B, typename C>
@@ -37,7 +42,17 @@ struct ptr {
   using dt = C;
 };
 
+using Alloc = allocator<X>;
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  int x = 1054;
-  auto t = pointer_access<ptr<int, int, int>>::pointer_to(x);
+  Alloc alloc;
+  X tmp;
+  X *x = allocator_access<Alloc>::allocate(alloc, 5);
+  for (int i = 0; i < 5; ++i) {
+    allocator_access<Alloc>::construct(alloc, x + i, move(tmp));
+  }
+  for (int i = 0; i < 5; ++i) {
+    allocator_access<Alloc>::destroy(alloc, x + i);
+  }
+  std::cout << allocator_access<Alloc>::max_size(alloc) << std::endl;
 }

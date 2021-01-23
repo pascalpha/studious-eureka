@@ -79,6 +79,10 @@ eureka_value_helper_macro(is_union);
 template<typename Arg>
 using is_enum = boolean_constant<__is_enum(Arg)>;
 eureka_value_helper_macro(is_enum);
+
+template<typename Arg>
+using is_empty = boolean_constant<__is_empty(Arg)>;
+eureka_value_helper_macro(is_empty);
 // ends __built_in implementation
 
 namespace _impl {
