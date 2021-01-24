@@ -138,7 +138,7 @@ void implicit_construct_impl(const Arg &);
 template<typename Arg>
 true_t is_implicitly_constructible_impl(const Arg &, decltype(implicit_construct_impl<const Arg &>({})) *_ = nullptr);
 false_t is_implicitly_constructible_impl(...);
-}
+}  // namespace _impl
 template<typename Arg>
 using is_implicitly_constructible = decltype(_impl::is_implicitly_constructible_impl(declared_value<Arg>()));
 eureka_value_helper_macro(is_implicitly_constructible);

@@ -46,6 +46,8 @@ struct ptr {
 
 using Alloc = allocator<X>;
 
+#include "type_traits"
+std::pair<int, int> p;
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   std::cout << is_implicitly_constructible_v<X> << std::endl;
 }
