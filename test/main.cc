@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "eureka/traits/traits.h"
 #include "eureka/utility/utility.h"
@@ -11,6 +12,7 @@
 #include "eureka/memory/pointer.h"
 #include "eureka/memory/general.h"
 #include "eureka/memory/allocator.h"
+#include "eureka/memory/unique_ptr.h"
 
 using namespace eureka;
 class X {
@@ -45,14 +47,10 @@ struct ptr {
 using Alloc = allocator<X>;
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  Alloc alloc;
-  X tmp;
-  X *x = allocator_access<Alloc>::allocate(alloc, 5);
-  for (int i = 0; i < 5; ++i) {
-    allocator_access<Alloc>::construct(alloc, x + i, move(tmp));
-  }
-  for (int i = 0; i < 5; ++i) {
-    allocator_access<Alloc>::destroy(alloc, x + i);
-  }
-  std::cout << allocator_access<Alloc>::max_size(alloc) << std::endl;
+  X t;
+  default_delete<X> default_delete;
+  unique_ptr<int, X &> p(nullptr, t);
+
+  std::unique_ptr<int, X &> r(nullptr, t);
+//  unique_ptr<X> p(nullptr, move(default_delete));
 }
