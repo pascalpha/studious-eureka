@@ -19,7 +19,7 @@ class X {
   int x = 0;
 
  public:
-  explicit X() {
+  X() {
     std::cout << "default" << std::endl;
   };
 
@@ -47,10 +47,5 @@ struct ptr {
 using Alloc = allocator<X>;
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  X t;
-  default_delete<X> default_delete;
-  unique_ptr<int, X &> p(nullptr, t);
-
-  std::unique_ptr<int, X &> r(nullptr, t);
-//  unique_ptr<X> p(nullptr, move(default_delete));
+  std::cout << is_implicitly_constructible_v<X> << std::endl;
 }
