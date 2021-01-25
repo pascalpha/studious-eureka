@@ -101,67 +101,169 @@ struct pair {
       is_implicitly_constructible<SArg>>>>, bool> = false>
   constexpr explicit pair() : first(), second() {};
 
- public:
+ private:
+  /**
+   * constraints for constructors taking two params
+   */
   using constraints = _impl::pair_construction_constraints<First, Second, true>;
 
+  /**
+   * constraints for constructors taking a pair object
+   */
   template<typename FArg, typename SArg>
   using pair_constraints = _impl::pair_construction_constraints<
       First, Second, !is_same_v < FArg, First> || ! is_same_v<SArg, Second>>;
 
  public:
+  /**
+   * copy constructors taking two const references.
+   * two types must be both implicitly copy constructible.
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param f
+   * @param s
+   */
   template<typename FArg = First, typename SArg = Second,
       enable_if_t<(constraints::template constructible<FArg, SArg>
           && constraints::template implicitly_convertible<FArg, SArg>), bool> = true>
   constexpr pair(const First &f, const Second &s): first(f), second(s) {}
 
+  /**
+   * explicit copy constructor taking two const references.
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param f
+   * @param s
+   */
   template<typename FArg = First, typename SArg = Second,
       enable_if_t<(constraints::template constructible<FArg, SArg>
           && !constraints::template implicitly_convertible<FArg, SArg>), bool> = false>
   explicit constexpr pair(const First &f, const Second &s): first(f), second(s) {}
 
+  /**
+   * copy constructor taking a const reference to a pair of values.
+   * both types must be implicitly constructible.
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param p
+   */
   template<typename FArg, typename SArg,
       enable_if_t<pair_constraints<FArg, SArg>::template constructible<FArg, SArg>
                       && pair_constraints<FArg, SArg>::template implicitly_convertible<FArg, SArg>, bool> = true>
   constexpr pair(const pair<FArg, SArg> &p) : first(p.first), second(p.second) {}
 
+  /**
+   * explicit copy constructor taking a const reference to a pair of values.
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param p
+   */
   template<typename FArg, typename SArg,
       enable_if_t<pair_constraints<FArg, SArg>::template constructible<FArg, SArg>
                       && !pair_constraints<FArg, SArg>::template implicitly_convertible<FArg, SArg>, bool> = false>
   explicit constexpr pair(const pair<FArg, SArg> &p) : first(p.first), second(p.second) {}
 
+  /**
+   * default copy constructor
+   */
   constexpr pair(const pair &) = default;
 
+  /**
+   * default move constructor
+   */
   constexpr pair(pair &&) noexcept = default;
 
+  /**
+   * move copy constructor
+   *
+   * @tparam FArg
+   * @param f
+   * @param s
+   */
   template<typename FArg, enable_if_t<constraints::template move_copy_constructible<FArg, Second>, bool> = true>
   constexpr pair(FArg &&f, const Second &s) : first(forward<FArg>(f)), second(s) {}
 
+  /**
+   * move copy constructor
+   *
+   * @tparam FArg
+   * @param f
+   * @param s
+   */
   template<typename FArg,
       enable_if_t<constraints::template implicitly_move_copy_constructible<FArg, Second>, bool> = false>
   explicit constexpr pair(FArg &&f, const Second &s): first(forward<FArg>(f)), second(s) {}
 
+  /**
+   * copy move constructor
+   *
+   * @tparam SArg
+   * @param f
+   * @param s
+   */
   template<typename SArg, enable_if_t<constraints::template copy_move_constructible<First, SArg>, bool> = true>
   constexpr pair(const First &f, SArg &&s):first(f), second(forward<SArg>(s)) {}
 
+  /**
+   * copy move constructor
+   *
+   * @tparam SArg
+   * @param f
+   * @param s
+   */
   template<typename SArg,
       enable_if_t<constraints::template implicitly_copy_move_constructible<First, SArg>, bool> = false>
   explicit constexpr pair(const First &f, SArg &&s): first(f), second(forward<SArg>(s)) {}
 
+  /**
+   * move constructor taking two rvalue references
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param f
+   * @param s
+   */
   template<typename FArg, typename SArg,
       enable_if_t<constraints::template move_constructible<FArg, SArg>
                       && constraints::template implicitly_move_convertible<FArg, SArg>, bool> = true>
   constexpr pair(FArg &&f, SArg &&s) : first(forward<FArg>(f)), second(forward<SArg>(s)) {}
 
+  /**
+   * move constructor taking two rvalue references
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param f
+   * @param s
+   */
   template<typename FArg, typename SArg,
       enable_if_t<constraints::template move_constructible<FArg, SArg>
                       && !constraints::template implicitly_move_convertible<FArg, SArg>, bool> = false>
   explicit constexpr pair(FArg &&f, SArg &&s) : first(forward<FArg>(f)), second(forward<SArg>(s)) {}
 
+  /**
+   * move constructor taking an rvalue reference to a pair of values
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param p
+   */
   template<typename FArg, typename SArg,
       enable_if_t<pair_constraints<FArg, SArg>::template move_constructible<FArg, SArg>
                       && pair_constraints<FArg, SArg>::template implicitly_move_convertible<FArg, SArg>, bool> = true>
   constexpr pair(pair<FArg, SArg> &&p): first(forward<FArg>(p.first)), second(forward<SArg>(p.second)) {}
 
+  /**
+   * move constructor taking an rvalue reference to a pair of values
+   *
+   * @tparam FArg
+   * @tparam SArg
+   * @param p
+   */
   template<typename FArg, typename SArg,
       enable_if_t<pair_constraints<FArg, SArg>::template move_constructible<FArg, SArg>
                       && !pair_constraints<FArg, SArg>::template implicitly_move_convertible<FArg, SArg>, bool> = false>
