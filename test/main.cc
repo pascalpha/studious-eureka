@@ -13,28 +13,32 @@
 #include "eureka/memory/general.h"
 #include "eureka/memory/allocator.h"
 #include "eureka/memory/unique_ptr.h"
+#include "eureka/utility/pair.h"
 
 using namespace eureka;
 class X {
   int x = 0;
 
  public:
-  X() {
-    std::cout << "default" << std::endl;
+  explicit X() {
+	std::cout << "default" << std::endl;
   };
 
-  X(const X &x) {
-    std::cout << "copy" << std::endl;
+  X(int x) : x(x) {
+	std::cout << "default" << std::endl;
+  }
 
+  X(const X &x) {
+	std::cout << "copy" << std::endl;
   };
 
   X(X &&x) noexcept {
-    std::cout << "move" << std::endl;
+	std::cout << "move" << std::endl;
 
   }
 
   ~X() {
-    std::cout << "destruct" << std::endl;
+	std::cout << "destruct" << std::endl;
   }
 };
 
@@ -46,8 +50,11 @@ struct ptr {
 
 using Alloc = allocator<X>;
 
-#include "type_traits"
-std::pair<int, int> p;
+void func(pair<int, X> p) {
+  std::cout << "func" << std::endl;
+}
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  std::cout << is_implicitly_constructible_v<X> << std::endl;
+  X x, y(8);
+  pair<int, int> t = {0, 9};
+  pair<X, X> o = t;
 }
