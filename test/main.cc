@@ -21,24 +21,23 @@ class X {
 
  public:
   explicit X() {
-	std::cout << "default" << std::endl;
+    std::cout << "default" << std::endl;
   };
 
   X(int x) : x(x) {
-	std::cout << "default" << std::endl;
+    std::cout << "default" << std::endl;
   }
 
   X(const X &x) {
-	std::cout << "copy" << std::endl;
+    std::cout << "copy" << std::endl;
   };
 
   X(X &&x) noexcept {
-	std::cout << "move" << std::endl;
-
-  }
+    std::cout << "move" << std::endl;
+  };
 
   ~X() {
-	std::cout << "destruct" << std::endl;
+    std::cout << "destruct" << std::endl;
   }
 };
 
@@ -50,11 +49,18 @@ struct ptr {
 
 using Alloc = allocator<X>;
 
-void func(pair<int, X> p) {
+void func(pair<X, X> p) {
   std::cout << "func" << std::endl;
 }
+
+void test(X p) {
+  std::cout << "func" << std::endl;
+
+}
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   X x, y(8);
-  pair<int, int> t = {0, 9};
-  pair<X, X> o = t;
+  std::cout << std::is_convertible_v<X &&, X> << std::endl;
+  std::cout << pair<X, X>::constraints::implicitly_move_convertible<X, X> << std::endl;
+  func({x, y});
 }

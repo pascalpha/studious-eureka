@@ -15,35 +15,35 @@ template<typename First, typename Second, bool>
 struct pair_construction_constraints {
   template<typename FArg, typename SArg>
   constexpr bool static constructible
-	  = conjunction_v<is_constructible<First, const FArg &>, is_constructible<Second, const SArg &>>;
+      = conjunction_v<is_constructible<First, const FArg &>, is_constructible<Second, const SArg &>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static implicitly_convertible
-	  = conjunction_v<is_convertible<const FArg &, First>, is_convertible<const SArg &, Second>>;
+      = conjunction_v<is_convertible<const FArg &, First>, is_convertible<const SArg &, Second>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static move_constructible
-	  = conjunction_v < is_constructible < First, FArg &&>, is_constructible<Second, SArg &&>>;
+      = conjunction_v < is_constructible < First, FArg &&>, is_constructible<Second, SArg &&>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static implicitly_move_convertible
-	  = conjunction_v < is_convertible < FArg &&, First>, is_convertible<SArg &&, Second>>;
+      = conjunction_v < is_convertible < FArg &&, First>, is_convertible<SArg &&, Second>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static copy_move_constructible
-	  = conjunction_v < is_constructible<First, const FArg &>, is_constructible<Second, SArg &&>>;
+      = conjunction_v < is_constructible<First, const FArg &>, is_constructible<Second, SArg &&>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static implicitly_copy_move_constructible
-	  = conjunction_v < is_convertible<const FArg &, First>, is_convertible<SArg &&, Second>>;
+      = conjunction_v < is_convertible<const FArg &, First>, is_convertible<SArg &&, Second>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static move_copy_constructible
-	  = conjunction_v<is_constructible<First, FArg &&>, is_constructible<Second, const SArg &>>;
+      = conjunction_v<is_constructible<First, FArg &&>, is_constructible<Second, const SArg &>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static implicitly_move_copy_constructible
-	  = conjunction_v<is_convertible<FArg &&, First>, is_convertible<const SArg &, Second>>;
+      = conjunction_v<is_convertible<FArg &&, First>, is_convertible<const SArg &, Second>>;
 };
 
 template<typename First, typename Second>
@@ -83,8 +83,8 @@ struct pair {
    * \tparam SArg
    */
   template<typename FArg = First, typename SArg = Second,
-	  enable_if_t<conjunction_v<is_implicitly_constructible < FArg>,
-	  is_implicitly_constructible<SArg>>, bool> = true>
+      enable_if_t<conjunction_v<is_implicitly_constructible < FArg>,
+      is_implicitly_constructible<SArg>>, bool> = true>
   constexpr pair() : first(), second() {}
 
   /**
@@ -95,10 +95,10 @@ struct pair {
    * \tparam SArg
    */
   template<typename FArg = First, typename SArg = Second,
-	  enable_if_t<
-	  conjunction_v<is_default_constructible < FArg>, is_default_constructible<SArg>,
-	  negation<conjunction < is_implicitly_constructible < FArg>,
-	  is_implicitly_constructible<SArg>>>>, bool> = false>
+      enable_if_t<
+      conjunction_v<is_default_constructible < FArg>, is_default_constructible<SArg>,
+      negation<conjunction < is_implicitly_constructible < FArg>,
+      is_implicitly_constructible<SArg>>>>, bool> = false>
   constexpr explicit pair() : first(), second() {};
 
  public:
@@ -106,36 +106,68 @@ struct pair {
 
   template<typename FArg, typename SArg>
   using pair_constraints = _impl::pair_construction_constraints<
-	  First, Second, !is_same_v < FArg, First> || ! is_same_v<SArg, Second>>;
+      First, Second, !is_same_v < FArg, First> || ! is_same_v<SArg, Second>>;
 
  public:
   template<typename FArg = First, typename SArg = Second,
-	  enable_if_t<(constraints::template constructible<FArg, SArg>
-		  && constraints::template implicitly_convertible<FArg, SArg>), bool> = true>
+      enable_if_t<(constraints::template constructible<FArg, SArg>
+          && constraints::template implicitly_convertible<FArg, SArg>), bool> = true>
   constexpr pair(const First &f, const Second &s): first(f), second(s) {}
 
   template<typename FArg = First, typename SArg = Second,
-	  enable_if_t<(constraints::template constructible<FArg, SArg>
-		  && !constraints::template implicitly_convertible<FArg, SArg>), bool> = false>
+      enable_if_t<(constraints::template constructible<FArg, SArg>
+          && !constraints::template implicitly_convertible<FArg, SArg>), bool> = false>
   explicit constexpr pair(const First &f, const Second &s): first(f), second(s) {}
 
   template<typename FArg, typename SArg,
-	  enable_if_t<pair_constraints<FArg, SArg>::template constructible<FArg, SArg>
-					  && pair_constraints<FArg, SArg>::template implicitly_convertible<FArg, SArg>, bool> = true>
+      enable_if_t<pair_constraints<FArg, SArg>::template constructible<FArg, SArg>
+                      && pair_constraints<FArg, SArg>::template implicitly_convertible<FArg, SArg>, bool> = true>
   constexpr pair(const pair<FArg, SArg> &p) : first(p.first), second(p.second) {}
 
   template<typename FArg, typename SArg,
-	  enable_if_t<pair_constraints<FArg, SArg>::template constructible<FArg, SArg>
-					  && !pair_constraints<FArg, SArg>::template implicitly_convertible<FArg, SArg>, bool> = false>
+      enable_if_t<pair_constraints<FArg, SArg>::template constructible<FArg, SArg>
+                      && !pair_constraints<FArg, SArg>::template implicitly_convertible<FArg, SArg>, bool> = false>
   explicit constexpr pair(const pair<FArg, SArg> &p) : first(p.first), second(p.second) {}
 
   constexpr pair(const pair &) = default;
 
-  constexpr pair(pair &&)  noexcept = default;
+  constexpr pair(pair &&) noexcept = default;
 
+  template<typename FArg, enable_if_t<constraints::template move_copy_constructible<FArg, Second>, bool> = true>
+  constexpr pair(FArg &&f, const Second &s) : first(forward<FArg>(f)), second(s) {}
 
-};
+  template<typename FArg,
+      enable_if_t<constraints::template implicitly_move_copy_constructible<FArg, Second>, bool> = false>
+  explicit constexpr pair(FArg &&f, const Second &s): first(forward<FArg>(f)), second(s) {}
 
+  template<typename SArg, enable_if_t<constraints::template copy_move_constructible<First, SArg>, bool> = true>
+  constexpr pair(const First &f, SArg &&s):first(f), second(forward<SArg>(s)) {}
+
+  template<typename SArg,
+      enable_if_t<constraints::template implicitly_copy_move_constructible<First, SArg>, bool> = false>
+  explicit constexpr pair(const First &f, SArg &&s): first(f), second(forward<SArg>(s)) {}
+
+  template<typename FArg, typename SArg,
+      enable_if_t<constraints::template move_constructible<FArg, SArg>
+                      && constraints::template implicitly_move_convertible<FArg, SArg>, bool> = true>
+  constexpr pair(FArg &&f, SArg &&s) : first(forward<FArg>(f)), second(forward<SArg>(s)) {}
+
+  template<typename FArg, typename SArg,
+      enable_if_t<constraints::template move_constructible<FArg, SArg>
+                      && !constraints::template implicitly_move_convertible<FArg, SArg>, bool> = false>
+  explicit constexpr pair(FArg &&f, SArg &&s) : first(forward<FArg>(f)), second(forward<SArg>(s)) {}
+
+  template<typename FArg, typename SArg,
+      enable_if_t<pair_constraints<FArg, SArg>::template move_constructible<FArg, SArg>
+                      && pair_constraints<FArg, SArg>::template implicitly_move_convertible<FArg, SArg>, bool> = true>
+  constexpr pair(pair<FArg, SArg> &&p): first(forward<FArg>(p.first)), second(forward<SArg>(p.second)) {}
+
+  template<typename FArg, typename SArg,
+      enable_if_t<pair_constraints<FArg, SArg>::template move_constructible<FArg, SArg>
+                      && !pair_constraints<FArg, SArg>::template implicitly_move_convertible<FArg, SArg>, bool> = false>
+  explicit constexpr pair(pair<FArg, SArg> &&p): first(forward<FArg>(p.first)), second(forward<SArg>(p.second)) {}
+
+}; // class pair
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_PAIR_H_
