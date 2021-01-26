@@ -14,46 +14,72 @@
 
 namespace eureka {
 namespace _impl {
-template<typename Class>
-Class *reference_wrapper_impl(Class &r) noexcept { return address_of(r); }
-template<typename Class>
-[[maybe_unused]] void reference_wrapper_impl(Class &&r) = delete;
-}
-
-// todo bugfix
-template<typename Class>
+template<typename Arg>
+constexpr Arg &reference_wrap(Arg &arg) noexcept { return arg; }
+template<typename Arg>
+void reference_wrap(Arg &&) = delete;
+} // namespace _impl
+template<typename Arg>
 class reference_wrapper {
+  Arg *ptr;
+
+  template<typename Param>
+  using reference_wrapper_enabler = decltype(
+  _impl::reference_wrap<Arg>(declared_value<Param>()),
+      enable_if_t < !is_same_v < reference_wrapper, remove_const_volatile_reference < Param >>, placeholder_t > ());
+
  public:
-  Class *ptr;
+  using type = Arg;
 
-  template<typename Arg>
-  using argument_constraints
-  = enable_if_t<!is_same_v < reference_wrapper, remove_const_volatile_reference_t<Arg>>, placeholder_t>;
+  /**
+   * construct a reference wrapper from a reference value
+   * @tparam Param
+   * @param param
+   */
+  template<typename Param, typename = reference_wrapper_enabler<Param>>
+  constexpr reference_wrapper(Param &&param)
+  noexcept(noexcept(_impl::reference_wrap<Arg>(forward<Param>(param))))
+      : ptr(address_of(_impl::reference_wrap<Arg>(forward<Param>(param)))) {}
 
- public:
-  using type [[maybe_unused]] = Class;
+  /**
+   * copy constructor
+   */
+  reference_wrapper(const reference_wrapper &) noexcept = default;
 
-  template<typename Arg, typename = argument_constraints<Arg>,
-	  typename = decltype(_impl::reference_wrapper_impl(declared_value<Arg>()))>
-  reference_wrapper(Arg &&ref) noexcept(noexcept(_impl::reference_wrapper_impl(declared_value<Arg>()))):
-	  ptr(_impl::reference_wrapper_impl(forward<Arg>(ref))) {}
+  /**
+   * assignment
+   * @return
+   */
+  reference_wrapper &operator=(const reference_wrapper &) noexcept = default;
 
-  reference_wrapper(const reference_wrapper &) = default;
+  /**
+   * implicit accessor
+   * @return
+   */
+  constexpr operator Arg &() const noexcept { return *ptr; }
 
-  reference_wrapper &operator=(const reference_wrapper &) = default;
+  /**
+   * explicit accessor
+   * @return
+   */
+  constexpr Arg &get() const noexcept { return *ptr; }
 
-  reference_wrapper(reference_wrapper &&) = delete;
+  // todo invoke interface
 
-  reference_wrapper &operator=(reference_wrapper &&) = delete;
+}; // class reference wrapper
 
-  Class &get() const noexcept { return *ptr; }
-
-  operator Class &() const noexcept { return this->get(); }
-}; // class reference_wrapper
+/**
+ * deduction guide
+ */
+template<typename Arg>
+reference_wrapper(Arg &)-> reference_wrapper<Arg>;
 
 template<typename Arg>
-reference_wrapper(Arg &) -> reference_wrapper<Arg>;
-} // namespace eureka
+struct is_reference_wrapper : false_t {};
+template<typename Arg>
+struct is_reference_wrapper<reference_wrapper<Arg>> : true_t {};
+eureka_value_helper_macro(is_reference_wrapper);
+}  // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_FUNCTIONAL_REFERENCE_WRAPPER_H_
 #pragma clang diagnostic pop

@@ -22,23 +22,23 @@ class X {
 
  public:
   explicit X() {
-	std::cout << "default x" << std::endl;
+    std::cout << "default x" << std::endl;
   };
 
   X(int x) : x(x) {
-	std::cout << "default " << x << std::endl;
+    std::cout << "default " << x << std::endl;
   }
 
   X(const X &x) {
-	std::cout << "copy x" << std::endl;
+    std::cout << "copy x" << std::endl;
   };
 
   X(X &&x) noexcept {
-	std::cout << "move x" << std::endl;
+    std::cout << "move x" << std::endl;
   };
 
   ~X() {
-	std::cout << "destruct x" << std::endl;
+    std::cout << "destruct x" << std::endl;
   }
 };
 
@@ -48,49 +48,49 @@ class Y {
 
  public:
   explicit Y() {
-	std::cout << "default y" << std::endl;
+    std::cout << "default y" << std::endl;
   };
 
   Y(int y) : y(y) {
-	std::cout << "default " << y << std::endl;
+    std::cout << "default " << y << std::endl;
   }
 
   Y(const Y &y) {
-	std::cout << "copy y" << std::endl;
+    std::cout << "copy y" << std::endl;
   };
 
   Y(Y &&y) noexcept {
-	std::cout << "move y" << std::endl;
+    std::cout << "move y" << std::endl;
   };
 
   Y(const X &x) {
-	std::cout << "copy y from x" << std::endl;
+    std::cout << "copy y from x" << std::endl;
   }
 
   Y(X &&x) {
-	std::cout << "move y from x" << std::endl;
+    std::cout << "move y from x" << std::endl;
   }
 
   ~Y() {
-	std::cout << "destruct " << y << std::endl;
+    std::cout << "destruct " << y << std::endl;
   }
 
   Y &operator=(const Y &x) {
-	std::cout << "copy assign" << std::endl;
-	return *this;
+    std::cout << "copy assign" << std::endl;
+    return *this;
   }
   Y &operator=(Y &&x) {
-	std::cout << "move assign" << std::endl;
-	return *this;
+    std::cout << "move assign" << std::endl;
+    return *this;
   }
 
   Y &operator=(const X &x) {
-	std::cout << "copy assign y from x" << std::endl;
-	return *this;
+    std::cout << "copy assign y from x" << std::endl;
+    return *this;
   }
   Y &operator=(X &&x) {
-	std::cout << "move assign y from x" << std::endl;
-	return *this;
+    std::cout << "move assign y from x" << std::endl;
+    return *this;
   }
 };
 
@@ -130,8 +130,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   acc(rx);
   std::cout << x << std::endl;
   reference_wrapper<int> rwx = x;
-  reference_wrapper<int> u = rwx;
-  acc(rwx);
+  reference_wrapper<decltype(main)> u = main;
+  acc(u);
   std::cout << x << std::endl;
 
 }
