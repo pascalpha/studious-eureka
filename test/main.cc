@@ -109,6 +109,9 @@ struct ptr {
   using dt = C;
 };
 
+class Z : X {
+
+};
 using Alloc = allocator<X>;
 
 void func(pair<X, X> p) {
@@ -125,14 +128,8 @@ void acc(X x) {
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  int x = 0;
-  int &rx = x;
-  acc(rx);
-  std::cout << x << std::endl;
-  reference_wrapper<int> rwx = x;
-  reference_wrapper<decltype(main)> u = main;
-  acc(u);
-  std::cout << x << std::endl;
-
+  std::cout << std::boolalpha << std::is_base_of_v<int, long> << std::endl;
+  std::cout << std::boolalpha << std::is_base_of_v<X, Y> << std::endl;
+  std::cout << std::boolalpha << std::is_base_of_v<X, Z> << std::endl;
 }
 

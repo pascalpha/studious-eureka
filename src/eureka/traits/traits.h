@@ -6,6 +6,7 @@
 #include "ability.h"
 #include "categorization.h"
 #include "general.h"
+#include "relations.h"
 #include "transformation.h"
 #include "misc.h"
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_TRAITS_H_
