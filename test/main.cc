@@ -14,6 +14,7 @@
 #include "eureka/memory/allocator.h"
 #include "eureka/memory/unique_ptr.h"
 #include "eureka/utility/pair.h"
+#include "eureka/functional/reference_wrapper.h"
 
 using namespace eureka;
 class X {
@@ -71,7 +72,7 @@ class Y {
   }
 
   ~Y() {
-	std::cout << "destruct y" << std::endl;
+	std::cout << "destruct " << y << std::endl;
   }
 
   Y &operator=(const Y &x) {
@@ -118,10 +119,20 @@ void test(X p) {
   std::cout << "func" << std::endl;
 
 }
+template<typename X>
+void acc(X x) {
+  x++;
+}
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  std::cout << std::boolalpha << is_move_assignable_v<pair<int, int>> << std::endl;
-  std::cout << std::boolalpha << is_move_assignable_v<pair<X, X>> << std::endl;
-  std::cout << std::boolalpha << is_move_assignable_v<pair<Y, Y>> << std::endl;
+  int x = 0;
+  int &rx = x;
+  acc(rx);
+  std::cout << x << std::endl;
+  reference_wrapper<int> rwx = x;
+  reference_wrapper<int> u = rwx;
+  acc(rwx);
+  std::cout << x << std::endl;
 
 }
+

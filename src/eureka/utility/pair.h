@@ -102,7 +102,7 @@ struct pair {
 	  is_implicitly_constructible<SArg>>>>, bool> = false>
   constexpr explicit pair() : first(), second() {};
 
- public:
+ private:
   /**
    * constraints for constructors taking two params
    */
