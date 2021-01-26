@@ -7,6 +7,7 @@
 #define STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_PAIR_H_
 
 #include "eureka/traits/traits.h"
+#include "eureka/utility/utility.h"
 
 namespace eureka {
 
@@ -303,7 +304,49 @@ struct pair {
 	second = forward<SArg>(oth.second);
 	return *this;
   }
+
+  void swap(pair &oth) {
+	eureka::swap(first, oth.first);
+	eureka::swap(second, oth.second);
+  }
 }; // class pair
+
+template<typename First, typename Second>
+inline constexpr bool
+operator==(const pair<First, Second> &x, const pair<First, Second> &y) {
+  return x.first == y.first && x.second == y.second;
+}
+
+template<typename First, typename Second>
+inline constexpr bool
+operator!=(const pair<First, Second> &x, const pair<First, Second> &y) {
+  return !(x == y);
+}
+
+template<typename First, typename Second>
+inline constexpr bool
+operator<(const pair<First, Second> &x, const pair<First, Second> &y) {
+  return x.first < y.first
+	  || (!(y.first < x.first) && (x.second < y.second));
+}
+
+template<typename First, typename Second>
+inline constexpr bool
+operator>(const pair<First, Second> &x, const pair<First, Second> &y) {
+  return y < x;
+}
+
+template<typename First, typename Second>
+inline constexpr bool
+operator<=(const pair<First, Second> &x, const pair<First, Second> &y) {
+  return !(y < x);
+}
+
+template<typename First, typename Second>
+inline constexpr bool
+operator>=(const pair<First, Second> &x, const pair<First, Second> &y) {
+  return !(x < y);
+}
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_PAIR_H_

@@ -42,6 +42,7 @@ class X {
 };
 
 class Y {
+  friend bool constexpr operator<(const Y &, const Y &);
   int y = 1;
 
  public:
@@ -92,6 +93,15 @@ class Y {
   }
 };
 
+inline constexpr bool
+operator==(const Y &x, const Y &y) {
+  return false;
+}
+inline constexpr bool
+operator<(const Y &x, const Y &y) {
+  return x.y < y.y;
+}
+
 template<typename A, typename B, typename C>
 struct ptr {
   using et = B;
@@ -110,7 +120,8 @@ void test(X p) {
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  int x, y;
-  std::cout << std::boolalpha << is_swappable_v < Y &&> << std::endl;
-  std::cout << std::boolalpha << std::is_swappable_v<Y &&> << std::endl;
+  std::cout << std::boolalpha << is_move_assignable_v<pair<int, int>> << std::endl;
+  std::cout << std::boolalpha << is_move_assignable_v<pair<X, X>> << std::endl;
+  std::cout << std::boolalpha << is_move_assignable_v<pair<Y, Y>> << std::endl;
+
 }
