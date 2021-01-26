@@ -110,13 +110,7 @@ void test(X p) {
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  std::cout << "////" << std::endl;
-  Y y;
-  X x;
-  y = x;
-  y = move(x);
-  pair<X, X> xx;
-  pair<Y, Y> yy;
-  yy = xx;
-  yy = move(xx);
+  int x, y;
+  std::cout << std::boolalpha << is_swappable_v < Y &&> << std::endl;
+  std::cout << std::boolalpha << std::is_swappable_v<Y &&> << std::endl;
 }

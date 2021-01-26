@@ -59,11 +59,11 @@ template<typename Class, typename Other>
 constexpr typename is_assignable<Class, Other>::value_t is_assignable_v = is_assignable<Class, Other>::value;
 
 template<typename Class>
-using is_copy_assignable = is_assignable<Class, add_lvalue_reference_t<add_const_t<Class>>>;
+using is_copy_assignable = is_assignable<Class &, add_lvalue_reference_t<add_const_t<Class>>>;
 eureka_value_helper_macro(is_copy_assignable);
 
 template<typename Class>
-using is_move_assignable = is_assignable<Class, add_rvalue_reference_t<Class>>;
+using is_move_assignable = is_assignable<Class &, add_rvalue_reference_t<Class>>;
 eureka_value_helper_macro(is_move_assignable);
 
 namespace _impl {
@@ -132,6 +132,41 @@ false_t is_implicitly_constructible_impl(...);
 template<typename Arg>
 using is_implicitly_constructible = decltype(_impl::is_implicitly_constructible_impl(declared_value<Arg>()));
 eureka_value_helper_macro(is_implicitly_constructible);
+
+namespace _impl {
+template<typename Arg>
+constexpr enable_if_t<(conjunction_v<is_move_assignable<Arg>, is_move_constructible<Arg >>), void>
+swap(Arg &x, Arg &y) noexcept;
+
+template<typename FArg, typename SArg, typename = placeholder_t, typename = placeholder_t>
+struct is_swappable_with_impl : false_t {};
+template<typename FArg, typename SArg>
+struct is_swappable_with_impl<FArg, SArg,
+							  valid_t<decltype(swap(declared_value<FArg>(), declared_value<SArg>()))>,
+							  valid_t<decltype(swap(declared_value<SArg>(), declared_value<FArg>()))>> : true_t {
+};
+} // namespace _impl
+template<typename FArg, typename SArg>
+using is_swappable_with = _impl::is_swappable_with_impl<FArg, SArg, placeholder_t, placeholder_t>;
+template<typename FArg, typename SArg>
+constexpr typename is_swappable_with<FArg, SArg>::value_t is_swappable_with_v = is_swappable_with<FArg, SArg>::value;
+
+namespace _impl {
+template<typename Arg, typename = placeholder_t>
+struct is_referencable : true_t {};
+template<typename Arg>
+struct is_referencable<Arg, enable_if_t<is_void_v<Arg> || is_function_v<remove_const_volatile_reference_t<Arg>>,
+										placeholder_t >> : false_t {
+};
+eureka_value_helper_macro(is_referencable);
+template<typename Arg, typename = placeholder_t>
+struct is_swappable_impl : false_t {};
+template<typename Arg>
+struct is_swappable_impl<Arg, enable_if_t<is_referencable_v<Arg>, placeholder_t>> : is_swappable_with<Arg &, Arg &> {};
+} // namespace _impl
+template<typename Arg>
+using is_swappable = _impl::is_swappable_impl<Arg, placeholder_t>;
+eureka_value_helper_macro(is_swappable);
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_ABILITY_H_

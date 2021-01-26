@@ -28,6 +28,14 @@ constexpr Arg &&forward(remove_reference_t<Arg> &&arg) noexcept {
   static_assert(!std::is_lvalue_reference<Arg>::value, "forwarding as lvalue reference");
   return static_cast<Arg &&>(arg);
 }
+
+template<typename Arg>
+constexpr enable_if_t<(conjunction_v < is_move_assignable < Arg > , is_move_constructible < Arg >>), void>
+swap(Arg &x, Arg &y) noexcept {
+  auto tmp = move(y);
+  y = move(x);
+  x = move(tmp);
+}
 }
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_UTILITY_H_
