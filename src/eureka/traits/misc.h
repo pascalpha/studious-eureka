@@ -49,6 +49,14 @@ template<typename...>
 using valid_t = void;
 // used for template deduction
 using placeholder_t = void;
+
+struct none_such {
+  none_such() = delete;
+  none_such(const none_such &) = delete;
+  ~none_such() = delete;
+  none_such(none_such &&) = delete;
+  void operator=(const none_such &) = delete;
+};
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TRAITS_MISC_H_

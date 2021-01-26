@@ -21,23 +21,74 @@ class X {
 
  public:
   explicit X() {
-    std::cout << "default" << std::endl;
+	std::cout << "default x" << std::endl;
   };
 
   X(int x) : x(x) {
-    std::cout << "default" << std::endl;
+	std::cout << "default " << x << std::endl;
   }
 
   X(const X &x) {
-    std::cout << "copy" << std::endl;
+	std::cout << "copy x" << std::endl;
   };
 
   X(X &&x) noexcept {
-    std::cout << "move" << std::endl;
+	std::cout << "move x" << std::endl;
   };
 
   ~X() {
-    std::cout << "destruct" << std::endl;
+	std::cout << "destruct x" << std::endl;
+  }
+};
+
+class Y {
+  int y = 1;
+
+ public:
+  explicit Y() {
+	std::cout << "default y" << std::endl;
+  };
+
+  Y(int y) : y(y) {
+	std::cout << "default " << y << std::endl;
+  }
+
+  Y(const Y &y) {
+	std::cout << "copy y" << std::endl;
+  };
+
+  Y(Y &&y) noexcept {
+	std::cout << "move y" << std::endl;
+  };
+
+  Y(const X &x) {
+	std::cout << "copy y from x" << std::endl;
+  }
+
+  Y(X &&x) {
+	std::cout << "move y from x" << std::endl;
+  }
+
+  ~Y() {
+	std::cout << "destruct y" << std::endl;
+  }
+
+  Y &operator=(const Y &x) {
+	std::cout << "copy assign" << std::endl;
+	return *this;
+  }
+  Y &operator=(Y &&x) {
+	std::cout << "move assign" << std::endl;
+	return *this;
+  }
+
+  Y &operator=(const X &x) {
+	std::cout << "copy assign y from x" << std::endl;
+	return *this;
+  }
+  Y &operator=(X &&x) {
+	std::cout << "move assign y from x" << std::endl;
+	return *this;
   }
 };
 
@@ -59,8 +110,13 @@ void test(X p) {
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  X x, y(8);
-  std::cout << std::is_convertible_v<X &&, X> << std::endl;
-  std::cout << pair<X, X>::constraints::implicitly_move_convertible<X, X> << std::endl;
-  func({x, y});
+  std::cout << "////" << std::endl;
+  Y y;
+  X x;
+  y = x;
+  y = move(x);
+  pair<X, X> xx;
+  pair<Y, Y> yy;
+  yy = xx;
+  yy = move(xx);
 }
