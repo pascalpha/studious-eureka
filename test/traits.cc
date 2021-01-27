@@ -17,6 +17,7 @@ using namespace eureka;
 namespace {
 
 class traits_test : ::testing::Test {
+  std::tuple<int> t;
   std::unique_ptr<int> p;
 };
 
@@ -145,8 +146,6 @@ TEST(traits_test, relations) {
   // this behavior is consistent with the standard ones, underlying theory not understood
   EXPECT_TRUE((is_same_v<common_type_t<int, reference_wrapper<double>>, int>));
   EXPECT_TRUE((is_same_v<common_type_t<int, double &>, double>));
-
-  tuple<base, base, base, base> t;
 }
 } // namespace
 
