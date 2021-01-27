@@ -26,7 +26,7 @@ class reference_wrapper {
   template<typename Param>
   using reference_wrapper_enabler = decltype(
   _impl::reference_wrap<Arg>(declared_value<Param>()),
-      enable_if_t < !is_same_v < reference_wrapper, remove_const_volatile_reference < Param >>, placeholder_t > ());
+	  enable_if_t < !is_same_v < reference_wrapper, remove_const_volatile_reference < Param >>, placeholder_t > ());
 
  public:
   using type = Arg;
@@ -39,7 +39,7 @@ class reference_wrapper {
   template<typename Param, typename = reference_wrapper_enabler<Param>>
   constexpr reference_wrapper(Param &&param)
   noexcept(noexcept(_impl::reference_wrap<Arg>(forward<Param>(param))))
-      : ptr(address_of(_impl::reference_wrap<Arg>(forward<Param>(param)))) {}
+	  : ptr(address_of(_impl::reference_wrap<Arg>(forward<Param>(param)))) {}
 
   /**
    * copy constructor
@@ -79,6 +79,21 @@ struct is_reference_wrapper : false_t {};
 template<typename Arg>
 struct is_reference_wrapper<reference_wrapper<Arg>> : true_t {};
 eureka_value_helper_macro(is_reference_wrapper);
+
+template<typename Arg>
+inline reference_wrapper<Arg> ref(Arg &arg) noexcept { return reference_wrapper<Arg>(arg); }
+template<typename Arg>
+inline reference_wrapper<const Arg> cref(const Arg &arg) noexcept { return reference_wrapper<const Arg>(arg); }
+template<typename Arg>
+void ref(const Arg &&) = delete;
+template<typename Arg>
+void cref(const Arg &&) = delete;
+template<typename Arg>
+inline reference_wrapper<Arg>
+ref(reference_wrapper<Arg> arg) noexcept { return arg; }
+template<typename Arg>
+inline reference_wrapper<const Arg>
+cref(reference_wrapper<Arg> arg) noexcept { return {arg.get()}; }
 }  // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_FUNCTIONAL_REFERENCE_WRAPPER_H_

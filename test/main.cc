@@ -127,7 +127,6 @@ void acc(X x) {
   x++;
 }
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-
   std::cout << std::boolalpha << is_convertible_v<Z *, X *> << std::endl;
 }
 

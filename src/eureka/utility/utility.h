@@ -71,6 +71,17 @@ constexpr Arg exchange(Arg &obj, Param &&value) {
   obj = forward<Param>(value);
   return old;
 }
+
+/**
+ * \brief from lvalue to const type of arg
+ * \tparam Arg
+ * \param arg
+ * \return
+ */
+template<typename Arg>
+constexpr add_const_t<Arg> &as_const(Arg &arg) noexcept { return arg; }
+template<typename Arg>
+void as_const(const Arg &&) = delete;
 }
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_UTILITY_H_
