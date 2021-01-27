@@ -30,11 +30,11 @@ struct allocator {
   ~allocator() = default;
 
   constexpr T *allocate(size_t n) {
-    return static_cast<T *>(::operator new(sizeof(T) * n));
+	return static_cast<T *>(::operator new(sizeof(T) * n));
   }
 
   constexpr void deallocate(T *ptr, [[maybe_unused]] size_t n) {
-    ::operator delete(ptr);
+	::operator delete(ptr);
   }
 };
 
@@ -52,7 +52,7 @@ struct allocator_pointer_impl {
   using type = typename Alloc::value_t *;
 };
 template<typename Alloc>
-struct allocator_pointer_impl<Alloc, enable_if_t < has_pointer_t<Alloc>, placeholder_t>> {
+struct allocator_pointer_impl<Alloc, enable_if_t < has_pointer_t < Alloc>, placeholder_t>> {
 using type = typename Alloc::pointer_t;
 };
 
@@ -62,7 +62,7 @@ struct allocator_const_pointer_impl {
   ::template rebind<const typename Alloc::value_t>;
 };
 template<typename Alloc>
-struct allocator_const_pointer_impl<Alloc, enable_if_t < has_const_pointer_t<Alloc>, placeholder_t>> {
+struct allocator_const_pointer_impl<Alloc, enable_if_t < has_const_pointer_t < Alloc>, placeholder_t>> {
 using type = typename Alloc::const_pointer_t;
 };
 
@@ -72,7 +72,7 @@ struct allocator_void_pointer_impl {
   ::template rebind<void>;
 };
 template<typename Alloc>
-struct allocator_void_pointer_impl<Alloc, enable_if_t < has_void_pointer_t<Alloc>, placeholder_t>>{
+struct allocator_void_pointer_impl<Alloc, enable_if_t < has_void_pointer_t < Alloc>, placeholder_t>>{
 using type = typename Alloc::void_pointer_t;
 };
 
@@ -82,7 +82,7 @@ struct allocator_const_void_pointer_impl {
   ::template rebind<const void>;
 };
 template<typename Alloc>
-struct allocator_const_void_pointer_impl<Alloc, enable_if_t < has_const_void_pointer_t<Alloc>, placeholder_t>>{
+struct allocator_const_void_pointer_impl<Alloc, enable_if_t < has_const_void_pointer_t < Alloc>, placeholder_t>>{
 using type = typename Alloc::const_void_pointer_t;
 };
 
@@ -91,7 +91,7 @@ struct allocator_difference_impl {
   using type = typename pointer_access<typename _impl::allocator_pointer_impl<Alloc>::type>::difference_t;
 };
 template<typename Alloc>
-struct allocator_difference_impl<Alloc, enable_if_t < has_difference_t<Alloc>, placeholder_t>>{
+struct allocator_difference_impl<Alloc, enable_if_t < has_difference_t < Alloc>, placeholder_t>>{
 using type = typename Alloc::difference_t;
 };
 
@@ -101,7 +101,7 @@ struct allocator_size_impl {
   using type = eureka::size_t;
 };
 template<typename Alloc>
-struct allocator_size_impl<Alloc, enable_if_t < has_size_t<Alloc>, placeholder_t>>{
+struct allocator_size_impl<Alloc, enable_if_t < has_size_t < Alloc>, placeholder_t>>{
 using type = typename Alloc::size_t;
 };
 
@@ -133,7 +133,7 @@ auto allocator_rebind_impl(nullptr_t *) -> rebind_first_template_argument_t<Allo
 
 template<typename Alloc>
 struct allocator_access {
-  static_assert(has_value_t<Alloc>, "no value_t in allocator type");
+  static_assert(has_value_t < Alloc > , "no value_t in allocator type");
   /*allocator type*/
   using allocator_t = Alloc;
   /*value type, inherit from Alloc*/
@@ -167,26 +167,26 @@ struct allocator_access {
 
   [[nodiscard]] static constexpr
   pointer_t allocate(Alloc &alloc, size_t n) {
-    return alloc.allocate(n);
+	return alloc.allocate(n);
   }
 
   static constexpr
   void deallocate(Alloc &alloc, pointer_t ptr, size_t n) {
-    alloc.deallocate(ptr, n);
+	alloc.deallocate(ptr, n);
   }
 
   template<typename Class, typename... Args>
   static constexpr void construct(Alloc &alloc, Class *ptr, Args &&... args) {
-    construct_at(ptr, forward<Args>(args)...);
+	construct_at(ptr, forward<Args>(args)...);
   }
 
   template<typename Class>
   static constexpr void destroy(Alloc &alloc, Class *ptr) {
-    destroy_at(ptr);
+	destroy_at(ptr);
   }
 
   static constexpr size_t max_size(const Alloc &alloc) noexcept {
-    return static_cast<size_t>(-1) / sizeof(value_t);
+	return static_cast<size_t>(-1) / sizeof(value_t);
   }
 };
 }  // eureka
