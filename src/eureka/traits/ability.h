@@ -108,7 +108,7 @@ namespace _impl {
 template<typename Class, typename =  placeholder_t>
 struct is_returnable_impl : false_t {};
 template<typename Class>
-struct is_returnable_impl<Class, valid_t<Class(*)()>> : true_t {};
+struct is_returnable_impl<Class, valid_t<Class(&)()>> : true_t {};
 template<typename From, typename To, typename = placeholder_t>
 struct is_implicitly_convertible_impl : false_t {};
 template<typename From, typename To>

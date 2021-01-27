@@ -56,6 +56,21 @@ swap(Arg &x, Arg &y) noexcept {
   y = move(x);
   x = move(tmp);
 }
+
+/**
+ * \brief replaces value of object the a value and returns the old value
+ * \tparam Arg
+ * \tparam Param
+ * \param obj
+ * \param value
+ * \return
+ */
+template<typename Arg, typename Param = Arg>
+constexpr Arg exchange(Arg &obj, Param &&value) {
+  Arg old = move(obj);
+  obj = forward<Param>(value);
+  return old;
+}
 }
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_UTILITY_H_
