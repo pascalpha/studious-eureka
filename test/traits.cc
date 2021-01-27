@@ -69,6 +69,47 @@ TEST(traits_test, categorization) {
   EXPECT_TRUE(is_pointer_v<double *>);
   EXPECT_FALSE(is_pointer_v<nullptr_t>);
   EXPECT_TRUE(is_null_pointer_v<nullptr_t>);
+  EXPECT_FALSE(is_null_pointer_v<int *>);
+
+  EXPECT_FALSE(is_array_v<int>);
+  EXPECT_FALSE(is_array_v<int *>);
+  EXPECT_TRUE((is_array_v<int[]>));
+  EXPECT_TRUE((is_array_v<int[5]>));
+  EXPECT_TRUE((is_array_v<int[5][8]>));
+  EXPECT_TRUE((is_array_v<int[][8]>));
+
+  EXPECT_FALSE(is_unbounded_array_v<int>);
+  EXPECT_FALSE(is_unbounded_array_v<int *>);
+  EXPECT_TRUE((is_unbounded_array_v<int[]>));
+  EXPECT_FALSE((is_unbounded_array_v<int[5]>));
+  EXPECT_FALSE((is_unbounded_array_v<int[5][8]>));
+  EXPECT_TRUE((is_unbounded_array_v<int[][8]>));
+
+  EXPECT_FALSE(is_bounded_array_v<int>);
+  EXPECT_FALSE(is_bounded_array_v<int *>);
+  EXPECT_FALSE((is_bounded_array_v<int[]>));
+  EXPECT_TRUE((is_bounded_array_v<int[5]>));
+  EXPECT_TRUE((is_bounded_array_v<int[5][8]>));
+  EXPECT_FALSE((is_bounded_array_v<int[][8]>));
+
+  EXPECT_FALSE(is_lvalue_reference_v<int>);
+  EXPECT_TRUE(is_lvalue_reference_v<int &>);
+  EXPECT_TRUE(is_lvalue_reference_v<const int &>);
+  EXPECT_FALSE(is_lvalue_reference_v<int &&>);
+  EXPECT_FALSE(is_lvalue_reference_v<const int &&>);
+
+  EXPECT_FALSE(is_rvalue_reference_v<int>);
+  EXPECT_FALSE(is_rvalue_reference_v<int &>);
+  EXPECT_FALSE(is_rvalue_reference_v<const int &>);
+  EXPECT_TRUE(is_rvalue_reference_v<int &&>);
+  EXPECT_TRUE(is_rvalue_reference_v<const int &&>);
+
+  EXPECT_FALSE(is_reference_v<int>);
+  EXPECT_TRUE(is_reference_v<int &>);
+  EXPECT_TRUE(is_reference_v<const int &>);
+  EXPECT_TRUE(is_reference_v<int &&>);
+  EXPECT_TRUE(is_reference_v<const int &&>);
+
 }
 } // namespace
 
