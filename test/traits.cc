@@ -119,12 +119,12 @@ TEST(traits_test, categorization) {
 
 TEST(traits_test, relations) {
   struct base {
-	base() {
-	  std::cout << "constructing base" << std::endl;
-	}
-	~base() {
-	  std::cout << "destructing base" << std::endl;
-	}
+    base() {
+      std::cout << "constructing base" << std::endl;
+    }
+    ~base() {
+      std::cout << "destructing base" << std::endl;
+    }
   };
   struct derived : base {};
   EXPECT_TRUE((is_same_v<common_type_t<int, unsigned>, unsigned>));
@@ -146,6 +146,69 @@ TEST(traits_test, relations) {
   // this behavior is consistent with the standard ones, underlying theory not understood
   EXPECT_TRUE((is_same_v<common_type_t<int, reference_wrapper<double>>, int>));
   EXPECT_TRUE((is_same_v<common_type_t<int, double &>, double>));
+}
+
+TEST(traits_test, transformations) {
+  EXPECT_TRUE((is_same_v<add_const_t<int>, const int>));
+  EXPECT_TRUE((is_same_v<add_volatile_t<int>, volatile int>));
+  EXPECT_TRUE((is_same_v<add_const_volatile_t<int>, const volatile int>));
+
+  EXPECT_TRUE((is_same_v<remove_const_t<const int>, int>));
+  EXPECT_TRUE((is_same_v<remove_volatile_t<volatile int>, int>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_t<const volatile int>, int>));
+
+  EXPECT_TRUE((is_same_v<add_pointer_t<int>, int *>));
+  EXPECT_TRUE((is_same_v<add_pointer_t<void>, void *>));
+  EXPECT_TRUE((is_same_v<add_pointer_t<int[]>, int (*)[]>));
+  EXPECT_TRUE((is_same_v<add_pointer_t<volatile int>, volatile int *>));
+  EXPECT_TRUE((is_same_v<add_pointer_t<int &>, int *>));
+  EXPECT_TRUE((is_same_v<add_pointer_t<void (*)()>, void (**)()>));
+
+  EXPECT_TRUE((is_same_v<add_lvalue_reference_t<void()>, void (&)()>));
+  EXPECT_TRUE((is_same_v<add_lvalue_reference_t<int>, int &>));
+  EXPECT_TRUE((is_same_v<add_lvalue_reference_t<void>, void>));
+  EXPECT_TRUE((is_same_v<add_lvalue_reference_t<int[]>, int (&)[]>));
+
+  EXPECT_TRUE((is_same_v<add_rvalue_reference_t<void()>, void (&&)()>));
+  EXPECT_TRUE((is_same_v<add_rvalue_reference_t<int>, int &&>));
+  EXPECT_TRUE((is_same_v<add_rvalue_reference_t<void>, void>));
+  EXPECT_TRUE((is_same_v<add_rvalue_reference_t<int[]>, int (&&)[]>));
+
+  EXPECT_TRUE((is_same_v<remove_reference_t<int &>, int>));
+  EXPECT_TRUE((is_same_v<remove_reference_t<int &&>, int>));
+  EXPECT_TRUE((is_same_v<remove_reference_t<int (&)[]>, int[]>));
+  EXPECT_TRUE((is_same_v<remove_reference_t<void (*)()>, void (*)()>));
+  EXPECT_TRUE((is_same_v<remove_reference_t<int *&>, int *>));
+
+  EXPECT_TRUE((is_same_v<remove_const_volatile_t<const volatile void>, void>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_t<const volatile int &>, const volatile int &>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_t<const volatile int &&>, const volatile int &&>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_t<const volatile int>, int>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_t<void (&)()>, void (&)()>));
+
+  EXPECT_TRUE((is_same_v<remove_const_volatile_reference_t<const volatile void>, void>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_reference_t<const volatile int &>, int>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_reference_t<const volatile int &&>, int>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_reference_t<const volatile int &&>, int>));
+  EXPECT_TRUE((is_same_v<remove_const_volatile_reference_t<void (&)()>, void()>));
+
+  EXPECT_TRUE((is_same_v<remove_const_t<const volatile void>, volatile void>));
+  EXPECT_TRUE((is_same_v<remove_const_t<const int *const>, const int *>));
+
+  EXPECT_TRUE((is_same_v<remove_pointer_t<const int *>, const int>));
+  EXPECT_TRUE((is_same_v<remove_pointer_t<volatile void *>, volatile void>));
+  EXPECT_TRUE((is_same_v<remove_pointer_t<int ***const volatile>, int **>));
+  EXPECT_TRUE((is_same_v<remove_pointer_t<int (*const)[]>, int[]>));
+
+  EXPECT_TRUE((is_same_v<remove_extent_t<int[8]>, int>));
+  EXPECT_TRUE((is_same_v<remove_extent_t<int[]>, int>));
+  EXPECT_TRUE((is_same_v<remove_extent_t<int[][8]>, int[8]>));
+  EXPECT_TRUE((is_same_v<remove_extent_t<int[8][8][8]>, int[8][8]>));
+  EXPECT_TRUE((is_same_v<remove_all_extents_t<int[8][8][8]>, int>));
+}
+
+TEST(traits_test, categorization_further) {
+
 }
 } // namespace
 
