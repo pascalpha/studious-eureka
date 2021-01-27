@@ -5,7 +5,7 @@
 #ifndef STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_UTILITY_H_
 #define STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_UTILITY_H_
 
-#include "eureka/traits/transformation.h"
+#include "eureka/traits/traits.h"
 
 namespace eureka {
 /**
@@ -50,11 +50,24 @@ constexpr Arg &&forward(remove_reference_t<Arg> &&arg) noexcept {
  * \return
  */
 template<typename Arg>
-constexpr enable_if_t<(conjunction_v < is_move_assignable < Arg > , is_move_constructible < Arg >>), void>
+constexpr enable_if_t<(conjunction_v<is_move_assignable<Arg>, is_move_constructible<Arg >>), void>
 swap(Arg &x, Arg &y) noexcept {
   auto tmp = move(y);
   y = move(x);
   x = move(tmp);
+}
+/**
+ * \brief array swap
+ * \tparam Arg
+ * \tparam N
+ * \param f
+ * \param s
+ * \return
+ */
+template<typename Arg, size_t N>
+constexpr enable_if_t<is_swappable_v<Arg>, void>
+swap(Arg (&f)[N], Arg (&s)[N]) noexcept {
+  // TODO add array sway
 }
 
 /**

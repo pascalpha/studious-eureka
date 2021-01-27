@@ -9,17 +9,6 @@
 
 namespace eureka::test {
 
-struct default_constructible_t {};
-template<typename... Args>
-struct implicit_constructible_t { using types = Arg... };
-template<typename... Args>
-struct explicit_constructible_t { using types = Arg... };
-
-template<typename>
-struct generic_class_t {
-
-};
-
 } // namespace eureka::test
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_TEST_TEST_H_

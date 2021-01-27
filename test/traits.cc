@@ -4,14 +4,18 @@
 // Created by admin on 2021/1/27.
 //
 
+#include <iostream>
+#include <memory>
 #include <gtest/gtest.h>
 #include <eureka/traits/traits.h>
+#include <eureka/functional/reference_wrapper.h>
 
 using namespace eureka;
 
 namespace {
 
 class traits_test : ::testing::Test {
+  std::unique_ptr<int> p;
 
 };
 
@@ -109,6 +113,29 @@ TEST(traits_test, categorization) {
   EXPECT_TRUE(is_reference_v<const int &>);
   EXPECT_TRUE(is_reference_v<int &&>);
   EXPECT_TRUE(is_reference_v<const int &&>);
+}
+
+TEST(traits_test, relations) {
+  struct base {};
+  struct derived : base {};
+
+  EXPECT_TRUE((is_same_v<common_type_t<int, unsigned>, unsigned>));
+  EXPECT_TRUE((is_same_v<common_type_t<long, long long>, long long>));
+  EXPECT_TRUE((is_same_v<common_type_t<int, int>, int>));
+  EXPECT_TRUE((is_same_v<common_type_t<float, double>, double>));
+
+  EXPECT_TRUE((is_same_v<common_type_t<base &, base &&>, base>));
+  EXPECT_TRUE((is_same_v<common_type_t<base &, const base &>, base>));
+  EXPECT_TRUE((is_same_v<common_type_t<base, const base>, base>));
+  EXPECT_TRUE((is_same_v<common_type_t<base, derived>, base>));
+  EXPECT_TRUE((is_same_v<common_type_t<int *, nullptr_t>, int *>));
+  EXPECT_TRUE((is_same_v<common_type_t<base *, derived *>, base *>));
+  EXPECT_TRUE((is_same_v<common_type_t<int[], int[5], int[8]>, int *>));
+
+  EXPECT_TRUE((is_same_v<common_type_t<void(), void (&)(), void (*)()>, void (*)()>));
+
+  EXPECT_TRUE((is_same_v<common_type_t<int &, reference_wrapper<int>>, int>));
+  EXPECT_TRUE((is_same_v<common_type_t<int, reference_wrapper<double>>, int>));
 
 }
 } // namespace

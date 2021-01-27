@@ -20,7 +20,7 @@ struct default_delete {
   default_delete(const default_delete<Target> &) noexcept {};
 
   void operator()(Class *ptr) const {
-    delete ptr;
+	delete ptr;
   }
 };
 
@@ -35,7 +35,7 @@ struct default_delete<Class[]> {
 
   template<typename Target, typename = enable_if_t<is_convertible_v<Class(*)[], Target(*)[]>, placeholder_t>>
   void operator()(Target *ptr) const {
-    delete[] ptr;
+	delete[] ptr;
   }
 };
 
@@ -46,7 +46,7 @@ template<typename Class, typename>
 auto unique_ptr_pointer_impl(nullptr_t *) -> Class *;
 
 template<typename Deleter>
-using unique_ptr_deleter_select = boolean_constant<is_default_constructible_v<Deleter> && ! is_pointer_v<Deleter>>;
+using unique_ptr_deleter_select = boolean_constant<is_default_constructible_v<Deleter> && !is_pointer_v<Deleter>>;
 eureka_value_helper_macro(unique_ptr_deleter_select);
 } // _impl
 

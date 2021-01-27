@@ -6,6 +6,7 @@
 #define STUDIOUS_EUREKA_SRC_EUREKA_MEMORY_ALLOCATOR_H_
 
 #include "eureka/traits/traits.h"
+#include "eureka/utility/utility.h"
 
 #include "general.h"
 #include "pointer.h"
@@ -36,6 +37,10 @@ struct allocator {
   constexpr void deallocate(T *ptr, [[maybe_unused]] size_t n) {
 	::operator delete(ptr);
   }
+
+  template<typename First, typename Second>
+  friend
+  constexpr bool operator==(const allocator<First> &, const allocator<Second> &) noexcept { return true; }
 };
 
 template<typename Class, typename... Args>
@@ -52,8 +57,8 @@ struct allocator_pointer_impl {
   using type = typename Alloc::value_t *;
 };
 template<typename Alloc>
-struct allocator_pointer_impl<Alloc, enable_if_t < has_pointer_t < Alloc>, placeholder_t>> {
-using type = typename Alloc::pointer_t;
+struct allocator_pointer_impl<Alloc, enable_if_t<has_pointer_t<Alloc>, placeholder_t>> {
+  using type = typename Alloc::pointer_t;
 };
 
 template<typename Alloc, typename = placeholder_t>
@@ -62,8 +67,8 @@ struct allocator_const_pointer_impl {
   ::template rebind<const typename Alloc::value_t>;
 };
 template<typename Alloc>
-struct allocator_const_pointer_impl<Alloc, enable_if_t < has_const_pointer_t < Alloc>, placeholder_t>> {
-using type = typename Alloc::const_pointer_t;
+struct allocator_const_pointer_impl<Alloc, enable_if_t<has_const_pointer_t<Alloc>, placeholder_t>> {
+  using type = typename Alloc::const_pointer_t;
 };
 
 template<typename Alloc, typename = placeholder_t>
@@ -72,8 +77,8 @@ struct allocator_void_pointer_impl {
   ::template rebind<void>;
 };
 template<typename Alloc>
-struct allocator_void_pointer_impl<Alloc, enable_if_t < has_void_pointer_t < Alloc>, placeholder_t>>{
-using type = typename Alloc::void_pointer_t;
+struct allocator_void_pointer_impl<Alloc, enable_if_t<has_void_pointer_t<Alloc>, placeholder_t>> {
+  using type = typename Alloc::void_pointer_t;
 };
 
 template<typename Alloc, typename = placeholder_t>
@@ -82,8 +87,8 @@ struct allocator_const_void_pointer_impl {
   ::template rebind<const void>;
 };
 template<typename Alloc>
-struct allocator_const_void_pointer_impl<Alloc, enable_if_t < has_const_void_pointer_t < Alloc>, placeholder_t>>{
-using type = typename Alloc::const_void_pointer_t;
+struct allocator_const_void_pointer_impl<Alloc, enable_if_t<has_const_void_pointer_t<Alloc>, placeholder_t>> {
+  using type = typename Alloc::const_void_pointer_t;
 };
 
 template<typename Alloc, typename = placeholder_t>
@@ -91,8 +96,8 @@ struct allocator_difference_impl {
   using type = typename pointer_access<typename _impl::allocator_pointer_impl<Alloc>::type>::difference_t;
 };
 template<typename Alloc>
-struct allocator_difference_impl<Alloc, enable_if_t < has_difference_t < Alloc>, placeholder_t>>{
-using type = typename Alloc::difference_t;
+struct allocator_difference_impl<Alloc, enable_if_t<has_difference_t<Alloc>, placeholder_t>> {
+  using type = typename Alloc::difference_t;
 };
 
 template<typename Alloc, typename = placeholder_t>
@@ -101,8 +106,8 @@ struct allocator_size_impl {
   using type = eureka::size_t;
 };
 template<typename Alloc>
-struct allocator_size_impl<Alloc, enable_if_t < has_size_t < Alloc>, placeholder_t>>{
-using type = typename Alloc::size_t;
+struct allocator_size_impl<Alloc, enable_if_t<has_size_t<Alloc>, placeholder_t>> {
+  using type = typename Alloc::size_t;
 };
 
 template<typename Alloc>
@@ -133,7 +138,7 @@ auto allocator_rebind_impl(nullptr_t *) -> rebind_first_template_argument_t<Allo
 
 template<typename Alloc>
 struct allocator_access {
-  static_assert(has_value_t < Alloc > , "no value_t in allocator type");
+  static_assert(has_value_t<Alloc>, "no value_t in allocator type");
   /*allocator type*/
   using allocator_t = Alloc;
   /*value type, inherit from Alloc*/

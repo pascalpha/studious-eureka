@@ -13,6 +13,11 @@ namespace eureka {
 
 namespace _impl {
 template<typename First, typename Second, bool>
+/**
+ * \brief constants guarding the overloaded constructor resolution
+ * \tparam First
+ * \tparam Second
+ */
 struct pair_construction_constraints {
   template<typename FArg, typename SArg>
   constexpr bool static constructible
@@ -24,19 +29,19 @@ struct pair_construction_constraints {
 
   template<typename FArg, typename SArg>
   constexpr bool static move_constructible
-	  = conjunction_v < is_constructible < First, FArg &&>, is_constructible<Second, SArg &&>>;
+	  = conjunction_v<is_constructible<First, FArg &&>, is_constructible<Second, SArg &&>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static implicitly_move_convertible
-	  = conjunction_v < is_convertible < FArg &&, First>, is_convertible<SArg &&, Second>>;
+	  = conjunction_v<is_convertible<FArg &&, First>, is_convertible<SArg &&, Second>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static copy_move_constructible
-	  = conjunction_v < is_constructible<First, const FArg &>, is_constructible<Second, SArg &&>>;
+	  = conjunction_v<is_constructible<First, const FArg &>, is_constructible<Second, SArg &&>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static implicitly_copy_move_constructible
-	  = conjunction_v < is_convertible<const FArg &, First>, is_convertible<SArg &&, Second>>;
+	  = conjunction_v<is_convertible<const FArg &, First>, is_convertible<SArg &&, Second>>;
 
   template<typename FArg, typename SArg>
   constexpr bool static move_copy_constructible
@@ -47,6 +52,11 @@ struct pair_construction_constraints {
 	  = conjunction_v<is_convertible<FArg &&, First>, is_convertible<const SArg &, Second>>;
 };
 
+/**
+ * \brief disable incomplete types
+ * \tparam First
+ * \tparam Second
+ */
 template<typename First, typename Second>
 struct pair_construction_constraints<First, Second, false> {
   template<typename FArg, typename SArg>
@@ -67,7 +77,11 @@ struct pair_construction_constraints<First, Second, false> {
   constexpr bool static implicitly_move_copy_constructible = false;
 };
 }
-
+/**
+ * \brief representation of two values
+ * \tparam First
+ * \tparam Second
+ */
 template<typename First, typename Second>
 struct pair {
   using first_t = First;
@@ -84,8 +98,8 @@ struct pair {
    * \tparam SArg
    */
   template<typename FArg = First, typename SArg = Second,
-	  enable_if_t<conjunction_v<is_implicitly_constructible < FArg>,
-	  is_implicitly_constructible<SArg>>, bool> = true>
+	  enable_if_t<conjunction_v<is_implicitly_constructible<FArg>,
+								is_implicitly_constructible<SArg>>, bool> = true>
   constexpr pair() : first(), second() {}
 
   /**
@@ -97,9 +111,9 @@ struct pair {
    */
   template<typename FArg = First, typename SArg = Second,
 	  enable_if_t<
-	  conjunction_v<is_default_constructible < FArg>, is_default_constructible<SArg>,
-	  negation<conjunction < is_implicitly_constructible < FArg>,
-	  is_implicitly_constructible<SArg>>>>, bool> = false>
+		  conjunction_v<is_default_constructible<FArg>, is_default_constructible<SArg>,
+						negation<conjunction<is_implicitly_constructible<FArg>,
+											 is_implicitly_constructible<SArg>>>>, bool> = false>
   constexpr explicit pair() : first(), second() {};
 
  private:
@@ -113,20 +127,29 @@ struct pair {
    */
   template<typename FArg, typename SArg>
   using pair_constraints = _impl::pair_construction_constraints<
-	  First, Second, !is_same_v < FArg, First> || ! is_same_v<SArg, Second>>;
+	  First, Second, !is_same_v<FArg, First> || !is_same_v<SArg, Second>>;
 
+  /**
+   * \brief well formed if both types are copy assignable
+   */
   using copy_assignment_enabler
-  = conditional_t<(is_copy_assignable_v < First > && is_copy_assignable_v < Second > ),
+  = conditional_t<(is_copy_assignable_v<First> && is_copy_assignable_v<Second>),
 				  pair, none_such>;
 
+  /**
+   * \brief well formed if both types are move assignable
+   */
   using move_assignment_enabler
-  = conditional_t<(is_move_assignable_v < First > && is_move_assignable_v < Second > ),
+  = conditional_t<(is_move_assignable_v<First> && is_move_assignable_v<Second>),
 				  pair, none_such>;
 
+  /**
+   * \brief well formed if both types of the pair are move assignable
+   */
   template<typename FArg, typename SArg>
   using pair_assignment_enabler
-  = conditional_t<(is_assignable_v < First & , FArg &&> && is_assignable_v<Second &, SArg &&>),
-  pair<FArg, SArg>, none_such>;
+  = conditional_t<(is_assignable_v<First &, FArg &&> && is_assignable_v<Second &, SArg &&>),
+				  pair<FArg, SArg>, none_such>;
 
  public:
   /**
@@ -286,18 +309,35 @@ struct pair {
   /*TODO piecewise construct not implemented due to lack of tuple class*/
 
  public:
+  /**
+   * \brief copy assignment operator, enabled only of both param types are copy assignable
+   * \param oth
+   * \return
+   */
   pair &operator=(const copy_assignment_enabler &oth) {
 	first = oth.first;
 	second = oth.second;
 	return *this;
   }
 
+  /**
+   * \brief move assignment operator, enabled only if both param types are copy assignable
+   * \param oth
+   * \return
+   */
   pair &operator=(move_assignment_enabler &&oth) {
 	first = forward<First>(oth.first);
 	second = forward<Second>(oth.second);
 	return *this;
   }
 
+  /**
+   * \brief move assignment operator from an rvalue reference to a pair of move assignable values
+   * \tparam FArg
+   * \tparam SArg
+   * \param oth
+   * \return
+   */
   template<typename FArg, typename SArg>
   pair &operator=(pair_assignment_enabler<FArg, SArg> &&oth) {
 	first = forward<FArg>(oth.first);
@@ -305,24 +345,52 @@ struct pair {
 	return *this;
   }
 
+  /**
+   * \brief swap *this with oth
+   * \param oth
+   */
   void swap(pair &oth) {
 	eureka::swap(first, oth.first);
 	eureka::swap(second, oth.second);
   }
 }; // class pair
 
+/**
+ * \brief equality operator, true if both corresponding values are equal
+ * \tparam First
+ * \tparam Second
+ * \param x
+ * \param y
+ * \return
+ */
 template<typename First, typename Second>
 inline constexpr bool
 operator==(const pair<First, Second> &x, const pair<First, Second> &y) {
   return x.first == y.first && x.second == y.second;
 }
 
+/**
+ * \brief inequality operator
+ * \tparam First
+ * \tparam Second
+ * \param x
+ * \param y
+ * \return
+ */
 template<typename First, typename Second>
 inline constexpr bool
 operator!=(const pair<First, Second> &x, const pair<First, Second> &y) {
   return !(x == y);
 }
 
+/**
+ * \brief less than operator
+ * \tparam First
+ * \tparam Second
+ * \param x
+ * \param y
+ * \return
+ */
 template<typename First, typename Second>
 inline constexpr bool
 operator<(const pair<First, Second> &x, const pair<First, Second> &y) {
@@ -330,18 +398,42 @@ operator<(const pair<First, Second> &x, const pair<First, Second> &y) {
 	  || (!(y.first < x.first) && (x.second < y.second));
 }
 
+/**
+ * \brief greater than operator
+ * \tparam First
+ * \tparam Second
+ * \param x
+ * \param y
+ * \return
+ */
 template<typename First, typename Second>
 inline constexpr bool
 operator>(const pair<First, Second> &x, const pair<First, Second> &y) {
   return y < x;
 }
 
+/**
+ * \brief less than or equal operator
+ * \tparam First
+ * \tparam Second
+ * \param x
+ * \param y
+ * \return
+ */
 template<typename First, typename Second>
 inline constexpr bool
 operator<=(const pair<First, Second> &x, const pair<First, Second> &y) {
   return !(y < x);
 }
 
+/**
+ * \brief greater than or equal operator
+ * \tparam First
+ * \tparam Second
+ * \param x
+ * \param y
+ * \return
+ */
 template<typename First, typename Second>
 inline constexpr bool
 operator>=(const pair<First, Second> &x, const pair<First, Second> &y) {
