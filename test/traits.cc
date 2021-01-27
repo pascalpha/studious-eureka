@@ -8,6 +8,8 @@
 #include <memory>
 #include <gtest/gtest.h>
 #include <eureka/traits/traits.h>
+#include <eureka/utility/pair.h>
+#include <eureka/utility/tuple.h>
 #include <eureka/functional/reference_wrapper.h>
 
 using namespace eureka;
@@ -16,7 +18,6 @@ namespace {
 
 class traits_test : ::testing::Test {
   std::unique_ptr<int> p;
-
 };
 
 TEST(traits_test, general) {
@@ -116,9 +117,15 @@ TEST(traits_test, categorization) {
 }
 
 TEST(traits_test, relations) {
-  struct base {};
+  struct base {
+	base() {
+	  std::cout << "constructing base" << std::endl;
+	}
+	~base() {
+	  std::cout << "destructing base" << std::endl;
+	}
+  };
   struct derived : base {};
-
   EXPECT_TRUE((is_same_v<common_type_t<int, unsigned>, unsigned>));
   EXPECT_TRUE((is_same_v<common_type_t<long, long long>, long long>));
   EXPECT_TRUE((is_same_v<common_type_t<int, int>, int>));
@@ -135,8 +142,11 @@ TEST(traits_test, relations) {
   EXPECT_TRUE((is_same_v<common_type_t<void(), void (&)(), void (*)()>, void (*)()>));
 
   EXPECT_TRUE((is_same_v<common_type_t<int &, reference_wrapper<int>>, int>));
+  // this behavior is consistent with the standard ones, underlying theory not understood
   EXPECT_TRUE((is_same_v<common_type_t<int, reference_wrapper<double>>, int>));
+  EXPECT_TRUE((is_same_v<common_type_t<int, double &>, double>));
 
+  tuple<base, base, base, base> t;
 }
 } // namespace
 

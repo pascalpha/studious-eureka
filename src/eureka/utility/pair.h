@@ -355,6 +355,21 @@ struct pair {
   }
 }; // class pair
 
+namespace _impl {
+template<typename First, typename Second>
+using pair_swap_enabler = enable_if_t<is_swappable_v<First> && is_swappable_v<Second>, void>;
+} // namespace _impl
+
+template<typename First, typename Second>
+constexpr _impl::pair_swap_enabler<First, Second> swap(pair<First, Second> &x, pair<First, Second> &y) noexcept {
+  x.swap(y);
+}
+
+template<typename First, typename Second>
+constexpr auto make_pair(First &&f, Second &&s) -> decltype(auto) {
+  return pair(forward<First>(f), forward<Second>(s));
+}
+
 /**
  * \brief equality operator, true if both corresponding values are equal
  * \tparam First
@@ -439,6 +454,7 @@ inline constexpr bool
 operator>=(const pair<First, Second> &x, const pair<First, Second> &y) {
   return !(x < y);
 }
+
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_PAIR_H_
