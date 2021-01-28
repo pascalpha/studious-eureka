@@ -119,12 +119,12 @@ TEST(traits_test, categorization) {
 
 TEST(traits_test, relations) {
   struct base {
-	base() {
-	  std::cout << "constructing base" << std::endl;
-	}
-	~base() {
-	  std::cout << "destructing base" << std::endl;
-	}
+    base() {
+      std::cout << "constructing base" << std::endl;
+    }
+    ~base() {
+      std::cout << "destructing base" << std::endl;
+    }
   };
   struct derived : base {};
   EXPECT_TRUE((is_same_v<common_type_t<int, unsigned>, unsigned>));
@@ -207,7 +207,12 @@ TEST(traits_test, transformations) {
   EXPECT_TRUE((is_same_v<remove_all_extents_t<int[8][8][8]>, int>));
 }
 
+template<typename Src, typename... Arg>
+using val = std::is_convertible<Src, Arg...>;
+
 TEST(traits_test, categorization_further) {
+  tuple<int, double, long, unsigned> t;
+  tuple<int, double, long, unsigned> x = {1, 2.0, 3l, 4u};
 }
 } // namespace
 

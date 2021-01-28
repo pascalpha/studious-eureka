@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(eureka VERSION 1.0.1 DESCRIPTION "header-only library that mimics STL")
+project(studious-eureka VERSION 1.0.1 DESCRIPTION "header-only library that mimics STL")
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES

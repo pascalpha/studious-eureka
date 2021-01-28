@@ -1,186 +1,137 @@
 #pragma clang diagnostic push
-//#pragma ide diagnostic ignored "HidingNonVirtualFunction"
-//#pragma ide diagnostic ignored "bugprone-forwarding-reference-overload"
-
-//
-// Created by admin on 2021/1/27.
-//
-#pragma clang diagnostic push
+#pragma ide diagnostic ignored "HidingNonVirtualFunction"
+#pragma ide diagnostic ignored "bugprone-forwarding-reference-overload"
 #pragma ide diagnostic ignored "google-explicit-constructor"
-
+//
+// Created by mamin on 1/28/2021.
+//
 #ifndef STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_TUPLE_H_
 #define STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_TUPLE_H_
+
+#include "eureka/utility/utility.h"
 
 #include "eureka/traits/traits.h"
 
 namespace eureka {
 namespace _impl {
-// end of cons list
-static constexpr struct end_of_cons_t {} end_of_cons;
+template<size_t Index, typename Arg>
+struct tuple_head {
+  Arg value;
 
-template<size_t Index, typename Element>
-struct head {
-  Element value;
+  constexpr tuple_head() : value() {}
 
-  constexpr head() : value() {}
+  constexpr tuple_head(const Arg &a) : value(a) {}
 
-  constexpr head(const Element &h) : value(h) {}
+  constexpr tuple_head(const tuple_head &) = default;
 
-  constexpr head(const head &) = default;
-
-  constexpr head(head &&) noexcept = default;
+  constexpr tuple_head(tuple_head &&) noexcept = default;
 
   template<typename Param>
-  using head_forwarding_construct_enabler = enable_if_t<is_same_v<remove_reference_t < Param>, head>, placeholder_t>;
+  constexpr tuple_head(Param &&param) : value(forward<Param>(param)) {}
 
-  template<typename Param, typename = head_forwarding_construct_enabler<Param>>
-  constexpr head(Param &&param): value(forward<Param>(param)) {}
+  constexpr Arg &head_v() noexcept { return value; }
 
-  constexpr Element &element() noexcept { return value; }
+  constexpr const Arg &head_v() const noexcept { return value; }
+}; // class tuple_head
 
-  constexpr const Element &element() const noexcept { return value; }
-};
+template<size_t Index, typename... Args>
+struct tuple_cons;
 
-template<size_t Index, typename... Elements>
-struct cons;
-
-template<size_t Index, typename Head, typename... Tail>
-struct cons<Index, Head, Tail...>
-	: public cons<Index + 1, Tail...>, private head<Index, Head> {
+template<size_t Index, typename Arg, typename... Args>
+struct tuple_cons<Index, Arg, Args...>
+    : public tuple_cons<Index + 1, Args...>,
+      private tuple_head<Index, Arg> {
 
   template<size_t, typename...> friend
-  class cons;
+  class tuple_cons;
 
-  using next_t = cons<Index + 1, Tail...>;
-  using head_t = head<Index, Head>;
-  using index_t = arithmetic_constant<size_t, Index>;
+  using head_t = tuple_head<Index, Arg>;
+  using tail_t = tuple_cons<Index + 1, Args...>;
+  using cons_t = tuple_cons<Index, Arg, Args...>;
 
-  constexpr Head &get_head(index_t) { return head_t::element(); }
+  constexpr Arg &head() noexcept { return head_t::head_v(); }
 
-  constexpr const Head &get_head(index_t) const { return head_t::element(); }
+  constexpr const Arg &head() const noexcept { return head_t::head_v(); }
 
-  constexpr next_t &tail(index_t) { return *this; }
+  constexpr tail_t &tail() noexcept { return *this; }
 
-  constexpr const next_t &tail(index_t) const { return *this; }
+  constexpr const tail_t &tail() const noexcept { return *this; }
 
-  constexpr cons() : next_t(), head_t() {}
+  constexpr tuple_cons() : tail_t(), head_t() {}
 
-  explicit constexpr cons(const Head &h, const Tail &...t) : next_t(t...), head_t(h) {}
+  explicit constexpr tuple_cons(const Arg &arg, const Args &... args) : tail_t(args...), head_t(arg) {}
 
-  template<typename... TailParam>
-  using cons_forwarding_construct_enabler = enable_if_t<sizeof...(TailParam) == sizeof...(Tail), placeholder_t>;
+  template<typename Param, typename... Params,
+      typename = enable_if_t<sizeof...(Params) == sizeof...(Args), placeholder_t>>
+  explicit constexpr tuple_cons(Param &&param, Params &&...params)
+      : tail_t(forward<Params>(params)...), head_t(forward<Param>(param)) {}
 
-  template<typename HeadParam, typename... TailParam, typename = cons_forwarding_construct_enabler<TailParam...>>
-  explicit constexpr cons(HeadParam &&hp, TailParam &&... tp)
-	  : next_t(forward<TailParam>(tp)...), head_t(forward<HeadParam>(hp)) {}
+  constexpr tuple_cons(const tuple_cons &) = default;
 
-  constexpr cons(const cons &) = default;
-
-  cons &operator=(const cons &) = delete;
-
-  constexpr cons(cons &&c) noexcept
-	  : next_t(move(c.tail(cons::index_t()))), head_t(forward<Head>(c.get_head(cons::index_t()))) {}
+  constexpr tuple_cons(tuple_cons &&cons) noexcept
+      : tail_t(move(cons.cons_t::tail())), head_t(forward<Arg>(cons.cons_t::head())) {}
 
   template<typename... Params>
-  constexpr cons(const cons<Index, Params...> &c)
-	  : next_t(c.tail(cons::index_t())), head_t(c.get_head(cons::index_t())) {}
+  constexpr tuple_cons(const tuple_cons<Index, Params...> &cons)
+      : tail_t(cons.tuple_cons<Index, Params...>::tail()), head_t(cons.tuple_cons<Index, Params...>::head()) {}
+
+  template<typename Param, typename... Params>
+  constexpr tuple_cons(tuple_cons<Index, Arg, Params...> &&cons)
+      : tail_t(move(cons.tuple_cons<Index, Param, Params...>::tail())),
+        head_t(forward<Param>(cons.tuple_cons<Index, Param, Params...>::head())) {}
 };
 
-template<size_t Index, typename Head>
-struct cons<Index, Head> : private head<Index, Head> {
+template<size_t Index, typename Arg>
+struct tuple_cons<Index, Arg> : private tuple_head<Index, Arg> {
   template<size_t, typename...> friend
-  class cons;
+  class tuple_cons;
 
-  using head_t = head<Index, Head>;
-  using index_t = arithmetic_constant<size_t, Index>;
+  using head_t = tuple_head<Index, Arg>;
+  using cons_t = tuple_cons<Index, Arg>;
 
-  constexpr Head &get_head(index_t) { return head_t::element(); }
+  constexpr Arg &head() noexcept { return head_t::head_v(); }
 
-  constexpr const Head &get_head(index_t) const { return head_t::element(); }
+  constexpr const Arg &head() const noexcept { return head_t::head_v(); }
 
-  constexpr cons() : head_t() {}
+  constexpr tuple_cons() : head_t() {}
 
-  explicit constexpr cons(const head_t &h) : head_t{h} {}
+  explicit constexpr tuple_cons(const Arg &arg) : head_t(arg) {}
 
   template<typename Param>
-  explicit constexpr cons(Param &&param) : head_t(forward<Param>(param)) {}
+  explicit constexpr tuple_cons(Param &&param) : head_t(forward<Param>(param)) {}
 
-  constexpr cons(const cons &) = default;
+  constexpr tuple_cons(const tuple_cons &) = default;
 
-  cons &operator=(const cons &) = delete;
+  constexpr tuple_cons(tuple_cons &&cons) noexcept: head_t(forward<Arg>(cons.cons_t::head())) {}
 
-  constexpr cons(cons &&c) noexcept: head_t(forward<Head>(c.get_head(index_t()))) {}
+  template<typename Param>
+  constexpr tuple_cons(const tuple_cons<Index, Param> &cons) : head_t(cons.tuple_cons<Index, Param>::head()) {}
 
-  template<typename HeadParam>
-  constexpr cons(const cons<Index, HeadParam> &c) : head_t(c.get_head(index_t())) {}
-
-  template<typename HeadParam>
-  constexpr cons(cons<Index, HeadParam> &&c) : head_t(forward<HeadParam>(c.get_head(index_t()))) {}
-
+  template<typename Param>
+  constexpr tuple_cons(tuple_cons<Index, Arg> &&cons)
+      : head_t(forward<Param>(cons.tuple_cons<Index, Param>::head())) {}
 };
-template<typename... Elements>
-struct tuple;
 
 template<bool, typename... Args>
 struct tuple_construction_constraints {
-  static constexpr bool default_constructible = conjunction_v < is_default_constructible < Args >...>;
-  static constexpr bool implicitly_default_constructible = conjunction_v < is_implicitly_constructible < Args >...>;
-  template<typename... Params>
-  static constexpr bool copy_constructible = conjunction_v<is_constructible<Args, const Params &>...>;
-  template<typename... Params>
-  static constexpr bool implicitly_copy_constructible = conjunction_v<is_convertible<const Params &, Args>...>;
-  template<typename... Params>
-  static constexpr bool move_constructible = conjunction_v < is_constructible < Args, Params&&>...>;
-  template<typename... Params>
-  static constexpr bool implicitly_move_constructible = conjunction_v < is_convertible < Params &&, Args>...>;
-};
 
-template<typename... Args>
-struct tuple_construction_constraints<false, Args...> {
-  static constexpr bool default_constructible = false;
-  static constexpr bool implicitly_default_constructible = false;
-  template<typename...>
-  static constexpr bool copy_constructible = false;
-  template<typename...>
-  static constexpr bool implicitly_copy_constructible = false;
-  template<typename...>
-  static constexpr bool move_constructible = false;
-  template<typename...>
-  static constexpr bool implicitly_move_constructible = false;
 };
 } // namespace _impl
 
-template<typename... Elements>
-struct tuple : public _impl::cons<0, Elements...> {
-  using next_t = _impl::cons<0, Elements...>;
+template<typename... Args>
+struct tuple : _impl::tuple_cons<0, Args...> {
+  using tail_t = _impl::tuple_cons<0, Args...>;
 
-  using constraints = _impl::tuple_construction_constraints<true, Elements...>;
+  constexpr tuple() : tail_t() {}
 
-  template<enable_if_t<constraints::default_constructible
-						   && constraints::implicitly_default_constructible, bool> = false>
-  constexpr tuple() : next_t() {}
+  constexpr tuple(const Args &... args) : tail_t(args...) {}
 
-  template<enable_if_t<constraints::default_constructible
-						   && !constraints::implicitly_default_constructible, bool> = true>
-  explicit constexpr tuple() : next_t() {}
-
-  template<enable_if_t<(sizeof...(Elements) >= 1)
-						   && constraints::template copy_constructible<Elements...>
-						   && constraints::template implicitly_copy_constructible<Elements...>, bool> = false>
-  constexpr tuple(const Elements &... elements): next_t(elements...) {}
-
-  template<enable_if_t<(sizeof...(Elements) >= 1)
-						   && constraints::template copy_constructible<Elements...>
-						   && !constraints::template implicitly_copy_constructible<Elements...>, bool> = true>
-  explicit constexpr tuple(const Elements &... elements): next_t(elements...) {}
+  constexpr tuple(Args &&... args) : tail_t(forward<Args>(args)...) {}
 
   constexpr tuple(const tuple &) = default;
 
   constexpr tuple(tuple &&) noexcept = default;
-};
+}; // class tuple
 } // namespace eureka
-
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_TUPLE_H_
-
-#pragma clang diagnostic pop
 #pragma clang diagnostic pop
