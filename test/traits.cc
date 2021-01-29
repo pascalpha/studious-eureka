@@ -119,12 +119,12 @@ TEST(traits_test, categorization) {
 
 TEST(traits_test, relations) {
   struct base {
-    base() {
-      std::cout << "constructing base" << std::endl;
-    }
-    ~base() {
-      std::cout << "destructing base" << std::endl;
-    }
+	base() {
+	  std::cout << "constructing base" << std::endl;
+	}
+	~base() {
+	  std::cout << "destructing base" << std::endl;
+	}
   };
   struct derived : base {};
   EXPECT_TRUE((is_same_v<common_type_t<int, unsigned>, unsigned>));
@@ -210,9 +210,22 @@ TEST(traits_test, transformations) {
 template<typename Src, typename... Arg>
 using val = std::is_convertible<Src, Arg...>;
 
+struct Class {
+  explicit Class() = default;
+  int y = 0;
+
+  explicit Class(const Class &) = default;
+};
+
+void func(tuple<Class, int, double> x) {
+
+}
+
 TEST(traits_test, categorization_further) {
-  tuple<int, double, long, unsigned> t;
-  tuple<int, double, long, unsigned> x = {1, 2.0, 3l, 4u};
+  std::cout << std::boolalpha << is_implicitly_constructible_v<Class> << std::endl;
+  std::cout << std::boolalpha << is_default_constructible_v<Class> << std::endl;
+  tuple<int, int, int> x = {1, 1, 1};
+  std::tuple<std::tuple<int>, int> l;
 }
 } // namespace
 
