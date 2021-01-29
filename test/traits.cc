@@ -224,7 +224,6 @@ void func(tuple<Class, int, double> x) {
 TEST(traits_test, categorization_further) {
   std::cout << std::boolalpha << is_implicitly_constructible_v<Class> << std::endl;
   std::cout << std::boolalpha << is_default_constructible_v<Class> << std::endl;
-  tuple<int, int, int> x = {1, 1, 1};
   std::tuple<std::tuple<int>, int> l;
 }
 } // namespace
