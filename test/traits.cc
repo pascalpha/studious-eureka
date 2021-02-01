@@ -207,24 +207,31 @@ TEST(traits_test, transformations) {
   EXPECT_TRUE((is_same_v<remove_all_extents_t<int[8][8][8]>, int>));
 }
 
-template<typename Src, typename... Arg>
-using val = std::is_convertible<Src, Arg...>;
-
-struct Class {
-  explicit Class() = default;
-  int y = 0;
-
-  explicit Class(const Class &) = default;
+struct Explicit {
+  explicit Explicit() = default;
+  explicit Explicit(const Explicit &) = default;
+  explicit Explicit(Explicit &&) noexcept = default;
+  explicit Explicit(const int &x) {}
+  Explicit(const eureka::nullptr_t &) {}
 };
 
-void func(tuple<Class, int, double> x) {
-
-}
+void func(tuple<int, int, Explicit>) {}
 
 TEST(traits_test, categorization_further) {
-  std::cout << std::boolalpha << is_implicitly_constructible_v<Class> << std::endl;
-  std::cout << std::boolalpha << is_default_constructible_v<Class> << std::endl;
-  std::tuple<std::tuple<int>, int> l;
+
+  EXPECT_TRUE((is_default_constructible_v<Explicit>));
+  EXPECT_FALSE((is_implicitly_constructible_v<Explicit>));
+
+  EXPECT_TRUE((is_default_constructible_v<tuple<int, int, long>>));
+  EXPECT_TRUE((is_implicitly_constructible_v<tuple<int, int, long>>));
+  EXPECT_TRUE((is_default_constructible_v<tuple<int, int, Explicit>>));
+  EXPECT_FALSE((is_implicitly_constructible_v<tuple<int, int, Explicit>>));
+
+  EXPECT_TRUE((is_constructible_v<std::tuple<int, int, int>, const int &, const int &, const int &>));
+  EXPECT_TRUE((is_constructible_v<std::tuple<int, int, Explicit>, const int &, const int &, const Explicit &>));
+  EXPECT_TRUE(
+	  (is_constructible_v<std::tuple<int, Explicit, Explicit>, const int &, const Explicit &, const Explicit &>));
+
 }
 } // namespace
 

@@ -83,6 +83,10 @@ eureka_value_helper_macro(is_enum);
 template<typename Arg>
 using is_empty = boolean_constant<__is_empty(Arg)>;
 eureka_value_helper_macro(is_empty);
+
+template<typename Arg>
+using is_final = boolean_constant<__is_final(Arg)>;
+eureka_value_helper_macro(is_final);
 // ends __built_in implementation
 
 namespace _impl {
@@ -206,7 +210,7 @@ eureka_value_helper_macro(is_compound);
 
 template<typename Arg>
 struct is_scalar : disjunction<is_arithmetic<Arg>, is_enum<Arg>,
-                               is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
+							   is_pointer<Arg>, is_member_pointer<Arg>, is_null_pointer<Arg>> {
 };
 eureka_value_helper_macro(is_scalar);
 
