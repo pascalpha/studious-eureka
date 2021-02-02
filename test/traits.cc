@@ -211,7 +211,7 @@ struct Explicit {
   explicit Explicit() = default;
   explicit Explicit(const Explicit &) = default;
   explicit Explicit(Explicit &&) noexcept = default;
-  explicit Explicit(const int &x) {}
+  Explicit(int &&x) {}
   Explicit(const eureka::nullptr_t &) {}
 };
 
@@ -223,8 +223,8 @@ TEST(traits_test, categorization_further) {
   EXPECT_FALSE((is_implicitly_constructible_v<Explicit>));
 
   EXPECT_TRUE((is_default_constructible_v<tuple<int, int, long>>));
-  EXPECT_TRUE((is_implicitly_constructible_v<tuple<int, int, long>>));
   EXPECT_TRUE((is_default_constructible_v<tuple<int, int, Explicit>>));
+  EXPECT_TRUE((is_implicitly_constructible_v<tuple<int, int, long>>));
   EXPECT_FALSE((is_implicitly_constructible_v<tuple<int, int, Explicit>>));
 
   EXPECT_TRUE((is_constructible_v<std::tuple<int, int, int>, const int &, const int &, const int &>));
@@ -232,6 +232,16 @@ TEST(traits_test, categorization_further) {
   EXPECT_TRUE(
 	  (is_constructible_v<std::tuple<int, Explicit, Explicit>, const int &, const Explicit &, const Explicit &>));
 
+  EXPECT_TRUE((is_constructible_v<std::tuple<int, int, int>, int &&, int &&, int &&>));
+  EXPECT_TRUE((is_constructible_v<std::tuple<int, int, Explicit>, int &&, int &, Explicit &&>));
+  EXPECT_TRUE(
+	  (is_constructible_v<std::tuple<int, Explicit, Explicit>, int &&, int &&, int &&>));
+
+  int x = 0, y = 1, z = 3;
+  Explicit a;
+
+  tuple<int, int, int> t(move(x), move(y), move(z));
+  tuple<int, int, Explicit> p(move(t));
 }
 } // namespace
 

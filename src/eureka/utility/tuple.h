@@ -127,76 +127,126 @@ struct tuple_cons<Index, Element> : protected tuple_head<Index, Element> {
 	  : head_t(forward<Param>(tuple_cons<Index, Param>::head(c))) {}
 };
 
-template<typename Placeholder, typename... Elements>
+template<bool, typename... Elements>
 struct tuple_construction_constraints {
 
-  static constexpr bool disabled = !is_same_v<Placeholder, placeholder_t>;
-
   static constexpr bool explicit_default_enabler
-	  = !disabled && (conjunction_v<is_default_constructible < Elements>...> &&
+	  = (conjunction_v<is_default_constructible < Elements>...> &&
   ! conjunction_v<is_implicitly_constructible < Elements>...>);
 
   static constexpr bool implicit_default_enabler
-	  = !disabled && (conjunction_v<is_default_constructible < Elements>...> &&
+	  = (conjunction_v<is_default_constructible < Elements>...> &&
   conjunction_v<is_implicitly_constructible < Elements>...>);
 
   template<typename... Params>
   static constexpr bool explicit_copy_enabler
-	  = !disabled &&(conjunction_v<is_constructible<Elements, const Params &>...> &&
+	  = (conjunction_v<is_constructible<Elements, const Params &>...> &&
   ! conjunction_v<is_convertible<const Params &, Elements>...>);
 
   template<typename... Params>
   static constexpr bool implicit_copy_enabler
-	  = !disabled &&(conjunction_v<is_constructible<Elements, const Params &>...> &&
+	  = (conjunction_v<is_constructible<Elements, const Params &>...> &&
 	  conjunction_v<is_convertible<const Params &, Elements>...>);
 
   template<typename... Params>
   static constexpr bool explicit_convert_enabler
-	  = !disabled && (conjunction_v < is_constructible < Elements, Params && >...> &&
+	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
   ! conjunction_v<is_convertible < Params && , Elements>...>);
 
   template<typename... Params>
   static constexpr bool implicit_convert_enabler
-	  = !disabled && (conjunction_v < is_constructible < Elements, Params && >...> &&
+	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
   conjunction_v<is_convertible < Params && , Elements>...>);
 
   template<typename... Params>
   static constexpr bool explicit_move_enabler
-	  = !disabled && (conjunction_v < is_constructible < Elements, Params && >...> &&
+	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
   ! conjunction_v<is_convertible < Params && , Elements>...>);
 
   template<typename... Params>
   static constexpr bool implicit_move_enabler
-	  = !disabled && (conjunction_v < is_constructible < Elements, Params && >...> &&
+	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
   conjunction_v<is_convertible < Params && , Elements>...>);
 
+};
 
+template<typename... Elements>
+struct tuple_construction_constraints<false, Elements...> {
+  static constexpr bool explicit_default_enabler = false;
+  static constexpr bool implicit_default_enabler = false;
+  template<typename... Params>
+  static constexpr bool explicit_copy_enabler = false;
+  template<typename... Params>
+  static constexpr bool implicit_copy_enabler = false;
+  template<typename... Params>
+  static constexpr bool explicit_convert_enabler = false;
+  template<typename... Params>
+  static constexpr bool implicit_convert_enabler = false;
+  template<typename... Params>
+  static constexpr bool explicit_move_enabler = false;
+  template<typename... Params>
+  static constexpr bool implicit_move_enabler = false;
 };
 } // namespace _impl
 
 template<typename... Elements>
 struct tuple : _impl::tuple_cons<0, Elements...> {
 
-  template<typename Placeholder>
-  using constraints = _impl::tuple_construction_constraints<Placeholder, Elements...>;
+  template<bool Enabled>
+  using constraints = _impl::tuple_construction_constraints<Enabled, Elements...>;
 
   using tail_t = _impl::tuple_cons<0, Elements...>;
 
-  template<typename Placeholder = placeholder_t, enable_if_t<constraints<Placeholder>::explicit_default_enabler, bool> = false>
+  template<bool enabled = true, enable_if_t<constraints<enabled>::explicit_default_enabler, bool> = false>
   explicit constexpr tuple() : tail_t() {}
 
-  template<typename Placeholder = placeholder_t, enable_if_t<constraints<Placeholder>::implicit_default_enabler, bool> = true>
+  template<bool enabled = true, enable_if_t<constraints<enabled>::implicit_default_enabler, bool> = true>
   constexpr tuple() : tail_t() {}
 
-  template<typename Placeholder = placeholder_t,
-	  enable_if_t<sizeof...(Elements) >= 1
-					  && constraints<Placeholder>::template explicit_copy_enabler<Elements...>, bool> = false>
+  template<bool enabled = true, enable_if_t<
+	  constraints<enabled && sizeof...(Elements) >= 1>::template explicit_copy_enabler<Elements...>, bool> = false>
   explicit constexpr tuple(const Elements &... elements) : tail_t(elements...) {}
 
-  template<typename Placeholder = placeholder_t,
-	  enable_if_t<sizeof...(Elements) >= 1
-					  && constraints<Placeholder>::template implicit_copy_enabler<Elements...>, bool> = true>
+  template<bool enabled = true, enable_if_t<
+	  constraints<enabled && sizeof...(Elements) >= 1>::template implicit_copy_enabler<Elements...>, bool> = true>
   constexpr tuple(const Elements &... elements) : tail_t(elements...) {}
+
+  template<typename... Params, enable_if_t<
+	  constraints<sizeof...(Params) == sizeof...(Elements)
+					  && (sizeof...(Params) > 1 ||(sizeof...(Params) == 1 && !is_same_v < tuple<Elements...>,
+												   remove_const_volatile_reference_t < Params > ...>))>
+  ::template explicit_move_enabler<Params...>, bool> = false>
+  explicit constexpr tuple(Params &&... params) : tail_t(forward<Params>(params)...) {}
+
+  template<typename... Params, enable_if_t<
+	  constraints<sizeof...(Params) == sizeof...(Elements)
+					  && (sizeof...(Params) > 1 ||(sizeof...(Params) == 1 && !is_same_v < tuple<Elements...>,
+												   remove_const_volatile_reference_t < Params > ...>))>
+  ::template implicit_move_enabler<Params...>, bool> = true>
+  constexpr tuple(Params &&... params) : tail_t(forward<Params>(params)...) {}
+
+  constexpr tuple(const tuple &) = default;
+  constexpr tuple(tuple &&) noexcept = default;
+
+  template<bool enabled = true, typename... Params, enable_if_t<
+	  constraints<enabled>::template explicit_copy_enabler<Params...>, bool> = false>
+  explicit constexpr tuple(const tuple<Params...> &t)
+	  : tail_t(static_cast<const _impl::tuple_cons<0, Params...> &>(t)) {}
+
+  template<bool enabled = true, typename... Params, enable_if_t<
+	  constraints<enabled>::template implicit_copy_enabler<Params...>, bool> = true>
+  constexpr tuple(const tuple<Params...> &t)
+	  : tail_t(static_cast<const _impl::tuple_cons<0, Params...> &>(t)) {}
+
+  template<bool enabled = true, typename... Params, enable_if_t<
+	  constraints<enabled>::template explicit_move_enabler<Params...>, bool> = false>
+  explicit constexpr tuple(tuple<Params...> &&t)
+	  : tail_t(static_cast<_impl::tuple_cons<0, Params...> &&>(t)) {}
+
+  template<bool enabled = true, typename... Params, enable_if_t<
+	  constraints<enabled>::template implicit_move_enabler<Params...>, bool> = true>
+  constexpr tuple(tuple<Params...> &&t)
+	  : tail_t(static_cast<_impl::tuple_cons<0, Params...> &&>(t)) {}
 
 };
 } // namespace eureka
