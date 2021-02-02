@@ -1,5 +1,6 @@
 # studious-eureka
 
+In my spare time I've been doing nothing, coding on the day bed being lazy.
 Was to implement some traits for some numerical project, and end up with full support for type_traits. 
 At that moment, I thought why not and embarked on implementing all STL, or at least some of it.
 
@@ -13,3 +14,4 @@ In progress
 
 TBD
    1. containers & algorithms
+

@@ -10,6 +10,7 @@
 #include <eureka/traits/traits.h>
 #include <eureka/utility/pair.h>
 #include <eureka/utility/tuple.h>
+#include <eureka/utility/optional.h>
 #include <eureka/functional/reference_wrapper.h>
 
 using namespace eureka;
@@ -219,7 +220,6 @@ struct Explicit {
 void func(tuple<int, int, Explicit>) {}
 
 TEST(traits_test, categorization_further) {
-
   EXPECT_TRUE((is_default_constructible_v<Explicit>));
   EXPECT_FALSE((is_implicitly_constructible_v<Explicit>));
 

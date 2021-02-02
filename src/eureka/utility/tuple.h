@@ -12,6 +12,9 @@
 #include "eureka/utility/utility.h"
 #include "eureka/functional/reference_wrapper.h"
 
+/*
+ * TODO Assignment Operators & Relational Operators & Swap functionality
+ */
 namespace eureka {
 
 template<typename... Elements>
