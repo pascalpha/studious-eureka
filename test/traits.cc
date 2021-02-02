@@ -209,8 +209,9 @@ TEST(traits_test, transformations) {
 
 struct Explicit {
   explicit Explicit() = default;
-  explicit Explicit(const Explicit &) = default;
-  explicit Explicit(Explicit &&) noexcept = default;
+  Explicit(const Explicit &) = default;
+  Explicit(Explicit &&) noexcept = default;
+  Explicit &operator=(const Explicit &) = default;
   Explicit(int &&x) {}
   Explicit(const eureka::nullptr_t &) {}
 };
@@ -236,12 +237,6 @@ TEST(traits_test, categorization_further) {
   EXPECT_TRUE((is_constructible_v<std::tuple<int, int, Explicit>, int &&, int &, Explicit &&>));
   EXPECT_TRUE(
 	  (is_constructible_v<std::tuple<int, Explicit, Explicit>, int &&, int &&, int &&>));
-
-  int x = 0, y = 1, z = 3;
-  Explicit a;
-
-  tuple<int, int, int> t(move(x), move(y), move(z));
-  tuple<int, int, Explicit> p(move(t));
 }
 } // namespace
 

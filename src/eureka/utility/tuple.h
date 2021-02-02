@@ -10,6 +10,7 @@
 
 #include "eureka/traits/traits.h"
 #include "eureka/utility/utility.h"
+#include "eureka/functional/reference_wrapper.h"
 
 namespace eureka {
 
@@ -17,14 +18,13 @@ template<typename... Elements>
 struct tuple;
 
 namespace _impl {
-
 template<typename Arg>
 struct is_tuple : false_t {};
 template<typename... Args>
 struct is_tuple<tuple<Args...>> : true_t {};
 eureka_value_helper_macro(is_tuple);
 template<typename Arg>
-constexpr bool is_ebo_optimized = is_empty_v < Arg > && !is_final_v < Arg > && !is_tuple_v<Arg>;
+constexpr bool is_ebo_optimized = is_empty_v<Arg> && !is_final_v<Arg> && !is_tuple_v<Arg>;
 
 template<size_t Index, typename Element, bool = is_ebo_optimized<Element>>
 struct tuple_head;
@@ -43,16 +43,14 @@ struct tuple_head<Index, Element, /*is_ebo_optimized = */true> : Element {
 
 template<size_t Index, typename Element>
 struct tuple_head<Index, Element, /*is_ebo_optimized = */false> {
- private:
+  static constexpr Element &get_element(tuple_head &h) noexcept { return h.value; }
   Element value;
- public:
   constexpr tuple_head() : value() {}
   constexpr tuple_head(const Element &e) : value(e) {}
   constexpr tuple_head(const tuple_head &) = default;
   constexpr tuple_head(tuple_head &&) noexcept = default;
   template<typename Param>
   constexpr tuple_head(Param &&param) : value(forward<Param>(param)) {}
-  static constexpr Element &get_element(tuple_head &h) noexcept { return h.value; }
   static constexpr const Element &get_element(const tuple_head &h) noexcept { return h.value; }
 };
 
@@ -60,7 +58,7 @@ template<size_t Index, typename... Elements>
 struct tuple_cons;
 template<size_t Index, typename Element, typename... Elements>
 struct tuple_cons<Index, Element, Elements...>
-	: protected tuple_head<Index, Element>,
+	: public tuple_head<Index, Element>,
 	  public tuple_cons<Index + 1, Elements...> {
   using head_t = tuple_head<Index, Element>;
   using tail_t = tuple_cons<Index + 1, Elements...>;
@@ -97,7 +95,7 @@ struct tuple_cons<Index, Element, Elements...>
 		tail_t(move(tuple_cons<Index, Param, Params...>::tail(c))) {}
 };
 template<size_t Index, typename Element>
-struct tuple_cons<Index, Element> : protected tuple_head<Index, Element> {
+struct tuple_cons<Index, Element> : public tuple_head<Index, Element> {
   using head_t = tuple_head<Index, Element>;
   /*
    * head / tail accessors
@@ -131,43 +129,42 @@ template<bool, typename... Elements>
 struct tuple_construction_constraints {
 
   static constexpr bool explicit_default_enabler
-	  = (conjunction_v<is_default_constructible < Elements>...> &&
-  ! conjunction_v<is_implicitly_constructible < Elements>...>);
+	  = (conjunction_v<is_default_constructible<Elements>...> &&
+		  !conjunction_v<is_implicitly_constructible<Elements>...>);
 
   static constexpr bool implicit_default_enabler
-	  = (conjunction_v<is_default_constructible < Elements>...> &&
-  conjunction_v<is_implicitly_constructible < Elements>...>);
+	  = (conjunction_v<is_default_constructible<Elements>...> &&
+		  conjunction_v<is_implicitly_constructible<Elements>...>);
 
   template<typename... Params>
   static constexpr bool explicit_copy_enabler
 	  = (conjunction_v<is_constructible<Elements, const Params &>...> &&
-  ! conjunction_v<is_convertible<const Params &, Elements>...>);
+		  !conjunction_v<is_convertible<const Params &, Elements>...>);
 
   template<typename... Params>
   static constexpr bool implicit_copy_enabler
 	  = (conjunction_v<is_constructible<Elements, const Params &>...> &&
-	  conjunction_v<is_convertible<const Params &, Elements>...>);
+		  conjunction_v<is_convertible<const Params &, Elements>...>);
 
   template<typename... Params>
   static constexpr bool explicit_convert_enabler
-	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
-  ! conjunction_v<is_convertible < Params && , Elements>...>);
+	  = (conjunction_v<is_constructible<Elements, Params &&>...> &&
+		  !conjunction_v<is_convertible<Params &&, Elements>...>);
 
   template<typename... Params>
   static constexpr bool implicit_convert_enabler
-	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
-  conjunction_v<is_convertible < Params && , Elements>...>);
+	  = (conjunction_v<is_constructible<Elements, Params &&>...> &&
+		  conjunction_v<is_convertible<Params &&, Elements>...>);
 
   template<typename... Params>
   static constexpr bool explicit_move_enabler
-	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
-  ! conjunction_v<is_convertible < Params && , Elements>...>);
+	  = (conjunction_v<is_constructible<Elements, Params &&>...> &&
+		  !conjunction_v<is_convertible<Params &&, Elements>...>);
 
   template<typename... Params>
   static constexpr bool implicit_move_enabler
-	  = (conjunction_v < is_constructible < Elements, Params && >...> &&
-  conjunction_v<is_convertible < Params && , Elements>...>);
-
+	  = (conjunction_v<is_constructible<Elements, Params &&>...> &&
+		  conjunction_v<is_convertible<Params &&, Elements>...>);
 };
 
 template<typename... Elements>
@@ -190,13 +187,17 @@ struct tuple_construction_constraints<false, Elements...> {
 } // namespace _impl
 
 template<typename... Elements>
-struct tuple : _impl::tuple_cons<0, Elements...> {
+struct tuple : protected _impl::tuple_cons<0, Elements...> {
+  template<size_t Index, typename... Args>
+  friend auto get(tuple<Args...> &t);
 
+ protected:
   template<bool Enabled>
   using constraints = _impl::tuple_construction_constraints<Enabled, Elements...>;
 
   using tail_t = _impl::tuple_cons<0, Elements...>;
 
+ public:
   template<bool enabled = true, enable_if_t<constraints<enabled>::explicit_default_enabler, bool> = false>
   explicit constexpr tuple() : tail_t() {}
 
@@ -213,16 +214,18 @@ struct tuple : _impl::tuple_cons<0, Elements...> {
 
   template<typename... Params, enable_if_t<
 	  constraints<sizeof...(Params) == sizeof...(Elements)
-					  && (sizeof...(Params) > 1 ||(sizeof...(Params) == 1 && !is_same_v < tuple<Elements...>,
-												   remove_const_volatile_reference_t < Params > ...>))>
-  ::template explicit_move_enabler<Params...>, bool> = false>
+					  && (sizeof...(Params) > 1 || (sizeof...(Params) == 1 && !is_same_v<tuple<Elements...>,
+																						 remove_const_volatile_reference_t<
+																							 Params> ...>))>
+	  ::template explicit_move_enabler<Params...>, bool> = false>
   explicit constexpr tuple(Params &&... params) : tail_t(forward<Params>(params)...) {}
 
   template<typename... Params, enable_if_t<
 	  constraints<sizeof...(Params) == sizeof...(Elements)
-					  && (sizeof...(Params) > 1 ||(sizeof...(Params) == 1 && !is_same_v < tuple<Elements...>,
-												   remove_const_volatile_reference_t < Params > ...>))>
-  ::template implicit_move_enabler<Params...>, bool> = true>
+					  && (sizeof...(Params) > 1 || (sizeof...(Params) == 1 && !is_same_v<tuple<Elements...>,
+																						 remove_const_volatile_reference_t<
+																							 Params> ...>))>
+	  ::template implicit_move_enabler<Params...>, bool> = true>
   constexpr tuple(Params &&... params) : tail_t(forward<Params>(params)...) {}
 
   constexpr tuple(const tuple &) = default;
@@ -247,8 +250,45 @@ struct tuple : _impl::tuple_cons<0, Elements...> {
 	  constraints<enabled>::template implicit_move_enabler<Params...>, bool> = true>
   constexpr tuple(tuple<Params...> &&t)
 	  : tail_t(static_cast<_impl::tuple_cons<0, Params...> &&>(t)) {}
-
 };
+
+namespace _impl {
+template<typename Arg>
+struct unwrap_reference_wrapper { using type = Arg; };
+template<typename Arg>
+struct unwrap_reference_wrapper<reference_wrapper<Arg>> { using type = Arg &; };
+template<typename Arg>
+using tuple_decay_t = typename unwrap_reference_wrapper<decay_t<Arg>>::type;
+} // namespace _impl
+template<typename... Args>
+auto make_tuple(Args &&... args) -> decltype(auto) {
+  return tuple<_impl::tuple_decay_t<Args>...>(forward<Args>(args)...);
+}
+
+namespace _impl {
+template<size_t Index, typename Arg>
+struct tuple_element;
+template<size_t Index, typename Arg, typename... Args>
+struct tuple_element<Index, tuple<Arg, Args...>> : tuple_element<Index - 1, tuple<Args...>> {};
+template<typename Arg, typename...Args>
+struct tuple_element<0, tuple<Arg, Args...>> { using type = Arg; };
+} // namespace _impl
+template<size_t Index, typename... Args>
+auto get(tuple<Args...> &t) {
+  return _impl::tuple_head<Index, typename _impl::tuple_element<Index, tuple<Args...>>::type>::get_element(t);
+}
+template<size_t Index, typename... Args>
+auto get(const tuple<Args...> &t) {
+  return _impl::tuple_head<Index, typename _impl::tuple_element<Index, tuple<Args...>>::type>::get_element(t);
+}
+template<size_t Index, typename... Args>
+auto get(tuple<Args...> &&t) {
+  return _impl::tuple_head<Index, typename _impl::tuple_element<Index, tuple<Args...>>::type>::get_element(t);
+}
+template<size_t Index, typename... Args>
+auto get(const tuple<Args...> &&t) {
+  return _impl::tuple_head<Index, typename _impl::tuple_element<Index, tuple<Args...>>::type>::get_element(t);
+}
 } // namespace eureka
 
 #endif //STUDIOUS_EUREKA_SRC_EUREKA_UTILITY_TUPLE_H_
